@@ -1,17 +1,18 @@
 package app
 
 import (
+	"fmt"
+	"net/url"
 	"os"
-	"os/signal"
 	"path/filepath"
 	"strings"
-	"syscall"
 
+	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
-	"github.com/uber-go/tally"
 	"go.uber.org/zap"
 
+	"github.com/joesonw/distress/pkg/metrics"
 	goutil "github.com/joesonw/distress/pkg/util"
 )
 
@@ -29,12 +30,34 @@ func MakeCmdRun(
 	pConcurrency := cmd.Flags().IntP("concurrency", "c", 1, "run concurrency")
 	pFile := cmd.Flags().StringP("file", "f", "", "zip file of contents")
 	pDirectory := cmd.Flags().StringP("directory", "d", "", "directory of contents")
-	//pOut := cmd.Flags().StringP("out", "o", "", "metrics output target")
-	pInf := cmd.Flags().Bool("inf", false, "run infinitely until stop")
+	pOut := cmd.Flags().StringP("out", "o", "console", "stats output target")
 
 	cmd.Args = cobra.ExactValidArgs(1)
 	cmd.Run = func(cmd *cobra.Command, args []string) {
 		logger := *pLogger
+
+		var reporter metrics.Reporter
+		switch *pOut {
+		case "console":
+			reporter = metrics.Console()
+		default:
+			u, err := url.Parse(*pOut)
+			if err != nil {
+				logger.With(zap.Error(err)).Fatal("unable to parse --out/-o")
+			}
+			switch u.Scheme {
+			case "influx+http", "influx+https":
+				prot := strings.Split(u.Scheme, "+")[1]
+				q := u.Query()
+				reporter = metrics.Influx(
+					influxdb2.NewClient(fmt.Sprintf("%s://%s", prot, u.Host), q.Get("token")),
+					q.Get("org"),
+					q.Get("bucket"),
+				)
+			default:
+				logger.With(zap.Error(err)).Fatal(fmt.Sprintf("output \"%s\" is not supoprted", u.Scheme))
+			}
+		}
 
 		envs := map[string]string{}
 		for _, env := range *pEnvs {
@@ -73,28 +96,23 @@ func MakeCmdRun(
 
 		job, err := newJob(logger, fs, args[0], concurrency, envs, func() afero.Fs {
 			return afero.NewBasePathFs(afero.NewOsFs(), newFSPath)
-		}, tally.NoopScope)
+		})
 
 		if err != nil {
 			logger.With(zap.Error(err)).Fatal("unable to create job")
 		}
 
-		if *pInf {
-			ch := make(chan os.Signal, 1)
-			signal.Notify(ch, syscall.SIGTERM, os.Interrupt)
-			job.RunInfinity(ch)
-			job.Report()
+		if *pDuration > 0 {
+			job.RunDuration(*pDuration)
 		} else {
-			if *pDuration > 0 {
-				job.RunDuration(*pDuration)
-			} else {
-				amount := int64(1)
-				if *pAmount > 0 {
-					amount = int64(*pAmount)
-				}
-				job.RunAmount(amount)
+			amount := int64(1)
+			if *pAmount > 0 {
+				amount = int64(*pAmount)
 			}
+			job.RunAmount(amount)
 		}
+
+		job.Report(reporter)
 	}
 
 	return cmd

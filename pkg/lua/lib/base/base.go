@@ -2,7 +2,10 @@ package base
 
 import (
 	"context"
+	"fmt"
 	"time"
+
+	"github.com/joesonw/distress/pkg/metrics"
 
 	lua "github.com/yuin/gopher-lua"
 
@@ -24,9 +27,24 @@ func upContext(L *lua.LState) *luacontext.Context {
 }
 
 var funcs = map[string]lua.LGFunction{
+	"print": lPrint,
 	"group": lGroup,
 	"sleep": lSleep,
 	"fail":  lFail,
+}
+
+func lPrint(L *lua.LState) int {
+	ctx := upContext(L)
+	top := L.GetTop()
+	s := ""
+	for i := 1; i <= top; i++ {
+		s += fmt.Sprint(L.ToStringMeta(L.Get(i)).String())
+		if i != top {
+			s += "\t"
+		}
+	}
+	ctx.Logger().Info(s)
+	return 0
 }
 
 func lGroup(L *lua.LState) int {
@@ -34,10 +52,21 @@ func lGroup(L *lua.LState) int {
 	name := L.CheckString(1)
 	fn := L.CheckFunction(2)
 	defer ctx.Enter(name).Exit()
+	start := time.Now()
 	err := L.CallByParam(lua.P{
 		Fn:      fn,
 		Protect: true,
 	})
+	cost := time.Since(start)
+	scopeName := ctx.Scope()
+	in := ctx.Global().Unique(scopeName, func() interface{} {
+		metric := metrics.Gauge(scopeName+"_us", nil)
+		ctx.Global().RegisterMetric(metric)
+		return metric
+	})
+	ctx.Global()
+	metric := in.(metrics.Metric)
+	metric.Add(float64(cost.Microseconds()))
 	if err != nil {
 		L.RaiseError(err.Error())
 	}

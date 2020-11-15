@@ -108,19 +108,6 @@ func New(logger *zap.Logger, global *luacontext.Global, params Parameters) *VM {
 	libcrypto.Open(L, luaCtx)
 	libmetrics.Open(L, luaCtx)
 
-	L.SetGlobal("print", L.NewClosure(func(L *lua.LState) int {
-		top := L.GetTop()
-		s := ""
-		for i := 1; i <= top; i++ {
-			s += fmt.Sprint(L.ToStringMeta(L.Get(i)).String())
-			if i != top {
-				s += "\t"
-			}
-		}
-		logger.Info(s)
-		return 0
-	}))
-
 	for k, v := range params.EnvVars {
 		L.Env.RawSetString(k, lua.LString(v))
 	}

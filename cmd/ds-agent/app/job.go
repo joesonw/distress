@@ -1,20 +1,19 @@
 package app
 
 import (
+	"context"
 	"fmt"
-	"os"
 	"sync"
 	"sync/atomic"
 	"time"
 
-	"github.com/montanaflynn/stats"
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
-	"github.com/uber-go/tally"
 	"go.uber.org/zap"
 
 	luacontext "github.com/joesonw/distress/pkg/lua/context"
 	luavm "github.com/joesonw/distress/pkg/lua/vm"
+	"github.com/joesonw/distress/pkg/metrics"
 )
 
 type Job struct {
@@ -22,9 +21,8 @@ type Job struct {
 	fs          afero.Fs
 	vms         []*luavm.VM
 	concurrency int
-
-	runData      stats.Float64Data
-	runHistogram tally.Histogram
+	global      *luacontext.Global
+	runMetric   metrics.Metric
 }
 
 func newJob(
@@ -34,7 +32,6 @@ func newJob(
 	concurrency int,
 	envs map[string]string,
 	newFS func() afero.Fs,
-	scope tally.Scope,
 ) (*Job, error) {
 	source, err := afero.ReadFile(fs, entry)
 	if err != nil {
@@ -61,27 +58,14 @@ func newJob(
 		}
 	}
 
-	runHistogram := scope.Histogram("run", tally.MustMakeExponentialDurationBuckets(time.Microsecond, 10, 10))
-
 	return &Job{
-		logger:       logger,
-		fs:           fs,
-		vms:          vms,
-		concurrency:  concurrency,
-		runHistogram: runHistogram,
+		logger:      logger,
+		fs:          fs,
+		vms:         vms,
+		concurrency: concurrency,
+		runMetric:   metrics.Gauge("run_ms", nil),
+		global:      global,
 	}, nil
-}
-
-func (j *Job) RunInfinity(ch chan os.Signal) {
-	j.logger.Info(fmt.Sprintf("run in infinity mode, conncurency: %d", j.concurrency))
-	done := false
-	go func() {
-		<-ch
-		done = true
-	}()
-	j.run(func() bool {
-		return done
-	})
 }
 
 func (j *Job) RunDuration(duration time.Duration) {
@@ -117,9 +101,7 @@ func (j *Job) run(shouldStop func() bool) {
 					j.logger.With(zap.Error(err)).Error("error running script")
 				}
 				since := time.Since(start)
-				us := float64(since.Milliseconds())
-				j.runData = append(j.runData, us)
-				j.runHistogram.RecordDuration(since)
+				j.runMetric.Add(float64(since.Milliseconds()))
 				vm.Reset()
 			}
 		}(vm)
@@ -128,7 +110,11 @@ func (j *Job) run(shouldStop func() bool) {
 	wg.Wait()
 }
 
-func (j *Job) Report() {
+func (j *Job) Report(reporter metrics.Reporter) {
+	err := j.global.ReportMetrics(context.TODO(), reporter)
+	if err != nil {
+		j.logger.With(zap.Error(err)).Error("unable to report metrics")
+	}
 }
 
 func (j *Job) Close() {

@@ -125,11 +125,11 @@ func sprintFloat64(v float64, _ error) string {
 }
 
 func sprintInt(i int) string {
-	return strconv.FormatInt(int64(i), 64)
+	return strconv.FormatInt(int64(i), 10)
 }
 
 func sprintInt64(i int64) string {
-	return strconv.FormatInt(i, 64)
+	return strconv.FormatInt(i, 10)
 }
 
 func sprintTags(tags map[string]string) string {
