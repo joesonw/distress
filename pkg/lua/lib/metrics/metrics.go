@@ -50,7 +50,9 @@ func makeMetricsFunction(f func(name string, tags map[string]string) metrics.Met
 			for k := range scopeTags {
 				tags[k] = scopeTags[k]
 			}
-			return f(name, tags)
+			metric := f(name, tags)
+			c.luaCtx.Global().RegisterMetric(metric)
+			return metric
 		})
 		L.Push(c.class.New(L, metric))
 		return 1
