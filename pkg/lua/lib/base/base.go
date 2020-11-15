@@ -5,12 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/joesonw/distress/pkg/metrics"
-
 	lua "github.com/yuin/gopher-lua"
 
 	luacontext "github.com/joesonw/distress/pkg/lua/context"
 	libasync "github.com/joesonw/distress/pkg/lua/lib/async"
+	"github.com/joesonw/distress/pkg/metrics"
 )
 
 func Open(L *lua.LState, luaCtx *luacontext.Context) {
