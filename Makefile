@@ -1,9 +1,12 @@
 all: lint test build
 
 .PHONY: lint
-lint:
-	go run ./tools/lint-grouped-imports
+lint: custom_lint
 	golangci-lint run ./...
+
+.PHONY: custom_lint
+custom_lint:
+	go run ./tools/lint-grouped-imports
 
 .PHONY: test
 test:
