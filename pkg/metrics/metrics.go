@@ -137,7 +137,7 @@ func sprintTags(tags map[string]string) string {
 	for k, v := range tags {
 		kvs = append(kvs, fmt.Sprintf("%s=%s", k, v))
 	}
-	return strings.Join(kvs, ",")
+	return strings.Join(kvs, "\n")
 }
 
 func mustFloat64(v float64, _ error) float64 {
