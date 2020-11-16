@@ -139,3 +139,7 @@ func sprintTags(tags map[string]string) string {
 	}
 	return strings.Join(kvs, ",")
 }
+
+func mustFloat64(v float64, _ error) float64 {
+	return v
+}

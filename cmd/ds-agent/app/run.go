@@ -31,11 +31,11 @@ func MakeCmdRun(
 	pFile := cmd.Flags().StringP("file", "f", "", "zip file of contents")
 	pDirectory := cmd.Flags().StringP("directory", "d", "", "directory of contents")
 	pOut := cmd.Flags().StringP("out", "o", "console", "stats output target")
+	pStats := cmd.Flags().String("stats", "", "stats server")
 
 	cmd.Args = cobra.ExactValidArgs(1)
 	cmd.Run = func(cmd *cobra.Command, args []string) {
 		logger := *pLogger
-
 		var reporter metrics.Reporter
 		switch *pOut {
 		case "console":
@@ -100,6 +100,12 @@ func MakeCmdRun(
 
 		if err != nil {
 			logger.With(zap.Error(err)).Fatal("unable to create job")
+		}
+
+		if s := *pStats; s != "" {
+			if err := startStatsServer(s, job); err != nil {
+				logger.With(zap.Error(err)).Fatal("unable to start stats server")
+			}
 		}
 
 		if *pDuration > 0 {

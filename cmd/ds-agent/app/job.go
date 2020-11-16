@@ -23,6 +23,11 @@ type Job struct {
 	concurrency int
 	global      *luacontext.Global
 	runMetric   metrics.Metric
+
+	finishedAmount int64
+	startedAt      time.Time
+	totalAmount    int64
+	totalDuration  time.Duration
 }
 
 func newJob(
@@ -63,13 +68,15 @@ func newJob(
 		fs:          fs,
 		vms:         vms,
 		concurrency: concurrency,
-		runMetric:   metrics.Gauge("run_ms", nil),
+		runMetric:   metrics.Gauge("run_us", nil),
 		global:      global,
+		startedAt:   time.Now(),
 	}, nil
 }
 
 func (j *Job) RunDuration(duration time.Duration) {
 	j.logger.Info(fmt.Sprintf("run in time constraint mode: %s, conncurency: %d", duration.String(), j.concurrency))
+	j.totalDuration = duration
 	stopAt := time.Now().Add(duration)
 	j.run(func() bool {
 		return time.Now().After(stopAt)
@@ -79,6 +86,7 @@ func (j *Job) RunDuration(duration time.Duration) {
 func (j *Job) RunAmount(amount int64) {
 	j.logger.Info(fmt.Sprintf("run in amount mode: %d, conncurency: %d", amount, j.concurrency))
 	var count int64
+	j.totalAmount = amount
 	j.run(func() bool {
 		return atomic.AddInt64(&count, 1) > amount
 	})
@@ -101,7 +109,8 @@ func (j *Job) run(shouldStop func() bool) {
 					j.logger.With(zap.Error(err)).Error("error running script")
 				}
 				since := time.Since(start)
-				j.runMetric.Add(float64(since.Milliseconds()))
+				j.runMetric.Add(float64(since.Microseconds()))
+				atomic.AddInt64(&j.finishedAmount, 1)
 				vm.Reset()
 			}
 		}(vm)
@@ -115,6 +124,22 @@ func (j *Job) Report(reporter metrics.Reporter) {
 	if err != nil {
 		j.logger.With(zap.Error(err)).Error("unable to report metrics")
 	}
+}
+
+func (j *Job) Stats() (*Stats, error) {
+	data := metrics.MemoryData{}
+	if err := metrics.Memory(&data).Report(context.TODO(), j.runMetric); err != nil {
+		return nil, err
+	}
+	return &Stats{
+		StartedAt:          j.startedAt.Unix(),
+		Concurrency:        int64(j.concurrency),
+		TotalAmount:        j.totalAmount,
+		FinishedAmount:     j.finishedAmount,
+		DurationMicro:      time.Since(j.startedAt).Microseconds(),
+		TotalDurationMicro: j.totalDuration.Microseconds(),
+		AverageCostMicro:   data.Gauge["run_us"].Mean,
+	}, nil
 }
 
 func (j *Job) Close() {
