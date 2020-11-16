@@ -17,7 +17,7 @@ type Server struct {
 }
 
 func (s *Server) Echo(ctx context.Context, req *message.Message) (*message.Message, error) {
-	delay := time.Duration(rand.Float64() * 3 * float64(time.Millisecond))
+	delay := time.Duration(rand.Float64() * float64(time.Second))
 	time.Sleep(delay)
 	println("Received: " + req.GetBody())
 	return &message.Message{
