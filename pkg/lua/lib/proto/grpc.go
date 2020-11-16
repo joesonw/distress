@@ -3,6 +3,7 @@ package proto
 import (
 	"context"
 	"fmt"
+	"time"
 
 	protodesc "github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/dynamic"
@@ -13,6 +14,8 @@ import (
 	luacontext "github.com/joesonw/distress/pkg/lua/context"
 	libasync "github.com/joesonw/distress/pkg/lua/lib/async"
 	libjson "github.com/joesonw/distress/pkg/lua/lib/json"
+	luautil "github.com/joesonw/distress/pkg/lua/util"
+	"github.com/joesonw/distress/pkg/metrics"
 )
 
 type grpcClientConnContext struct {
@@ -85,6 +88,21 @@ func serviceClientCall(L *lua.LState) int {
 			if method == nil {
 				return nil, fmt.Errorf("method \"%s\" not found", name)
 			}
+			serviceName := c.desc.GetFullyQualifiedName()
+			methodName := method.GetFullyQualifiedName()
+			perfMetric := luautil.NewGlobalUniqueMetric(c.luaCtx.Global(), "*GRPC*_perf", func() metrics.Metric {
+				return metrics.Gauge("grpc_perf_us", map[string]string{
+					"service": serviceName,
+					"method":  methodName,
+				})
+			}).(metrics.Metric)
+			rateMetric := luautil.NewGlobalUniqueMetric(c.luaCtx.Global(), "*GRPC*_rate", func() metrics.Metric {
+				return metrics.Rate("grpc_rate", map[string]string{
+					"service": serviceName,
+					"method":  methodName,
+				})
+			}).(metrics.Metric)
+
 			bytes, err := libjson.Marshal(reqObj)
 			if err != nil {
 				return nil, err
@@ -95,10 +113,14 @@ func serviceClientCall(L *lua.LState) int {
 				L.RaiseError(err.Error())
 			}
 
+			start := time.Now()
 			resMessage, err := c.client.InvokeRpc(ctx, method, req)
 			if err != nil {
+				rateMetric.Add(0)
 				return nil, err
 			}
+			rateMetric.Add(1)
+			perfMetric.Add(float64(time.Since(start).Microseconds()))
 
 			res, err := dynamic.AsDynamicMessage(resMessage)
 			if err != nil {

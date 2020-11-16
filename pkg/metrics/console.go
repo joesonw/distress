@@ -73,13 +73,13 @@ func (console) Report(ctx context.Context, metrics ...Metric) error {
 				sprintFloat64(data.data.Min()),
 				sprintFloat64(data.data.Median()),
 				sprintFloat64(data.data.Max()),
-				sprintFloat64(data.data.Percentile(0.9999)),
-				sprintFloat64(data.data.Percentile(0.999)),
-				sprintFloat64(data.data.Percentile(0.99)),
-				sprintFloat64(data.data.Percentile(0.95)),
-				sprintFloat64(data.data.Percentile(0.90)),
-				sprintFloat64(data.data.Percentile(0.75)),
-				sprintFloat64(data.data.Percentile(0.50)),
+				sprintFloat64(data.data.Percentile(99.99)),
+				sprintFloat64(data.data.Percentile(99.9)),
+				sprintFloat64(data.data.Percentile(99)),
+				sprintFloat64(data.data.Percentile(95)),
+				sprintFloat64(data.data.Percentile(90)),
+				sprintFloat64(data.data.Percentile(75)),
+				sprintFloat64(data.data.Percentile(50)),
 			})
 		}
 	}

@@ -121,7 +121,7 @@ func Rate(name string, tags map[string]string) Metric {
 }
 
 func sprintFloat64(v float64, _ error) string {
-	return strconv.FormatFloat(v, 'f', 2, 64)
+	return strconv.FormatFloat(v, 'f', 1, 64)
 }
 
 func sprintInt(i int) string {
