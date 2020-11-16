@@ -97,7 +97,7 @@ func New(logger *zap.Logger, global *luacontext.Global, params Parameters) *VM {
 	libjson.Open(L, luaCtx)
 	libbytes.Open(L, luaCtx)
 	libtime.Open(L, luaCtx)
-	libbase.Open(L, luaCtx)
+	libbase.Open(L, luaCtx, params.Filesystem)
 
 	libfs.Open(L, luaCtx, params.Filesystem)
 	libhttp.Open(L, luaCtx, &http.Client{})

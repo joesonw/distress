@@ -5,31 +5,41 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/spf13/afero"
 	lua "github.com/yuin/gopher-lua"
 
 	luacontext "github.com/joesonw/distress/pkg/lua/context"
 	libasync "github.com/joesonw/distress/pkg/lua/lib/async"
+	luautil "github.com/joesonw/distress/pkg/lua/util"
 	"github.com/joesonw/distress/pkg/metrics"
 )
 
-func Open(L *lua.LState, luaCtx *luacontext.Context) {
+type baseContext struct {
+	luaCtx *luacontext.Context
+	fs     afero.Fs
+}
+
+func Open(L *lua.LState, luaCtx *luacontext.Context, fs afero.Fs) {
 	ud := L.NewUserData()
-	ud.Value = luaCtx
+	ud.Value = &baseContext{
+		luaCtx: luaCtx,
+		fs:     fs,
+	}
 	for k, f := range funcs {
 		L.SetGlobal(k, L.NewClosure(f, ud))
 	}
 }
 
-func upContext(L *lua.LState) *luacontext.Context {
+func upContext(L *lua.LState) *baseContext {
 	ud := L.CheckUserData(lua.UpvalueIndex(1))
-	return ud.Value.(*luacontext.Context)
+	return ud.Value.(*baseContext)
 }
 
 var funcs = map[string]lua.LGFunction{
-	"print": lPrint,
-	"group": lGroup,
-	"sleep": lSleep,
-	"fail":  lFail,
+	"print":  lPrint,
+	"group":  lGroup,
+	"sleep":  lSleep,
+	"import": lImport,
 }
 
 func lPrint(L *lua.LState) int {
@@ -42,7 +52,7 @@ func lPrint(L *lua.LState) int {
 			s += "\t"
 		}
 	}
-	ctx.Logger().Info(s)
+	ctx.luaCtx.Logger().Info(s)
 	return 0
 }
 
@@ -50,21 +60,17 @@ func lGroup(L *lua.LState) int {
 	ctx := upContext(L)
 	name := L.CheckString(1)
 	fn := L.CheckFunction(2)
-	defer ctx.Enter(name).Exit()
+	defer ctx.luaCtx.Enter(name).Exit()
 	start := time.Now()
 	err := L.CallByParam(lua.P{
 		Fn:      fn,
 		Protect: true,
 	})
 	cost := time.Since(start)
-	scopeName := ctx.Scope()
-	in := ctx.Global().Unique(scopeName, func() interface{} {
-		metric := metrics.Gauge(scopeName+"_us", nil)
-		ctx.Global().RegisterMetric(metric)
-		return metric
+	scopeName := ctx.luaCtx.Scope()
+	metric := luautil.NewGlobalUniqueMetric(ctx.luaCtx.Global(), scopeName, func() metrics.Metric {
+		return metrics.Gauge(scopeName+"_us", nil)
 	})
-	ctx.Global()
-	metric := in.(metrics.Metric)
 	metric.Add(float64(cost.Microseconds()))
 	if err != nil {
 		L.RaiseError(err.Error())
@@ -74,15 +80,22 @@ func lGroup(L *lua.LState) int {
 
 func lSleep(L *lua.LState) int {
 	ctx := upContext(L)
-	dur := time.Duration(L.CheckInt64(2))
-	return libasync.Deferred(L, ctx.AsyncPool(), func(ctx context.Context) error {
+	dur := time.Duration(L.CheckInt64(1))
+	return libasync.Deferred(L, ctx.luaCtx.AsyncPool(), func(ctx context.Context) error {
 		time.Sleep(dur)
 		return nil
 	})
 }
 
-func lFail(L *lua.LState) int {
-	err := L.Get(1)
-	L.RaiseError(err.String())
-	return 0
+func lImport(L *lua.LState) int {
+	ctx := upContext(L)
+	name := L.CheckString(1)
+	b, err := afero.ReadFile(ctx.fs, name)
+	if err != nil {
+		L.RaiseError(err.Error())
+	}
+	if err := L.DoString(string(b)); err != nil {
+		L.RaiseError(err.Error())
+	}
+	return L.GetTop() - 1
 }

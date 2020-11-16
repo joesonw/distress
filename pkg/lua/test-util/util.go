@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	lua "github.com/yuin/gopher-lua"
 	"go.uber.org/zap"
@@ -81,7 +82,7 @@ func Run(t *testing.T, tests ...Testable) {
 			lua.OpenTable(L)
 			lua.OpenOs(L)
 
-			libbase.Open(L, luaCtx)
+			libbase.Open(L, luaCtx, afero.NewMemMapFs())
 			libjson.Open(L, luaCtx)
 			libbytes.Open(L, luaCtx)
 
