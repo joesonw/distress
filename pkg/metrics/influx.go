@@ -18,6 +18,7 @@ type influx struct {
 
 func Influx(writeAPI influxdb2api.WriteAPI, interval time.Duration, name string) Reporter {
 	r := &influx{
+		name:     name,
 		writeAPI: writeAPI,
 		ticker:   time.NewTicker(interval),
 	}
