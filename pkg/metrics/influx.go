@@ -54,37 +54,31 @@ func (r *influx) tick() {
 	for _, metric := range r.metrics {
 		switch data := metric.(type) {
 		case *counter:
-			{
-				r.writeAPI.WritePoint(influxdb2.NewPoint(
-					data.name,
-					data.tags,
-					map[string]interface{}{
-						"count": data.value,
-					},
-					time.Now()).AddTag("job", r.name))
-			}
+			r.writeAPI.WritePoint(influxdb2.NewPoint(
+				data.name,
+				data.tags,
+				map[string]interface{}{
+					"count": data.value,
+				},
+				time.Now()).AddTag("job", r.name))
 		case *gauge:
-			{
-				r.writeAPI.WritePoint(influxdb2.NewPoint(
-					data.name,
-					data.tags,
-					map[string]interface{}{
-						"sum":   mustFloat64(data.data.Sum()),
-						"count": data.data.Len(),
-					},
-					time.Now()).AddTag("job", r.name))
+			r.writeAPI.WritePoint(influxdb2.NewPoint(
+				data.name,
+				data.tags,
+				map[string]interface{}{
+					"sum":   mustFloat64(data.data.Sum()),
+					"count": data.data.Len(),
+				},
+				time.Now()).AddTag("job", r.name))
 
-			}
 		case *rate:
-			{
-				r.writeAPI.WritePoint(influxdb2.NewPoint(
-					data.name,
-					data.tags,
-					map[string]interface{}{
-						"value": data.Value(),
-					},
-					time.Now()).AddTag("job", r.name))
-			}
+			r.writeAPI.WritePoint(influxdb2.NewPoint(
+				data.name,
+				data.tags,
+				map[string]interface{}{
+					"value": data.Value(),
+				},
+				time.Now()).AddTag("job", r.name))
 		}
 	}
 	r.writeAPI.Flush()

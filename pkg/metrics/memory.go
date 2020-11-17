@@ -69,25 +69,21 @@ func (m *memory) Collect(metrics ...Metric) {
 	for _, metric := range metrics {
 		switch data := metric.(type) {
 		case *counter:
-			{
-				m.data.Counters[data.name] = struct {
-					Count int64
-					Tags  map[string]string
-				}{
-					Count: data.value,
-					Tags:  data.tags,
-				}
+			m.data.Counters[data.name] = struct {
+				Count int64
+				Tags  map[string]string
+			}{
+				Count: data.value,
+				Tags:  data.tags,
 			}
 
 		case *rate:
-			{
-				m.data.Rate[data.name] = struct {
-					Rate float64
-					Tags map[string]string
-				}{
-					Rate: data.Value(),
-					Tags: data.tags,
-				}
+			m.data.Rate[data.name] = struct {
+				Rate float64
+				Tags map[string]string
+			}{
+				Rate: data.Value(),
+				Tags: data.tags,
 			}
 		case *gauge:
 			m.data.Gauge[data.name] = struct {

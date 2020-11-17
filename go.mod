@@ -3,7 +3,7 @@ module github.com/joesonw/distress
 go 1.14
 
 require (
-	github.com/DataDog/datadog-go v4.2.0+incompatible // indirect
+	github.com/DataDog/datadog-go v4.2.0+incompatible
 	github.com/cenkalti/backoff/v4 v4.1.0 // indirect
 	github.com/flosch/pongo2/v4 v4.0.0
 	github.com/gin-gonic/gin v1.6.3

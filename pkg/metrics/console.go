@@ -34,22 +34,18 @@ func (c *console) Finish() error {
 	for _, metric := range c.metrics {
 		switch data := metric.(type) {
 		case *counter:
-			{
-				counterTable.Append([]string{
-					data.name,
-					sprintTags(data.tags),
-					sprintInt64(data.value),
-				})
-			}
+			counterTable.Append([]string{
+				data.name,
+				sprintTags(data.tags),
+				sprintInt64(data.value),
+			})
 
 		case *rate:
-			{
-				rateTable.Append([]string{
-					data.name,
-					sprintTags(data.tags),
-					sprintFloat64(data.Value()*100, nil) + "%",
-				})
-			}
+			rateTable.Append([]string{
+				data.name,
+				sprintTags(data.tags),
+				sprintFloat64(data.Value()*100, nil) + "%",
+			})
 		case *gauge:
 			gaugeTable.Append([]string{
 				data.name,
