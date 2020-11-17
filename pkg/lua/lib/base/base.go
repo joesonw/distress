@@ -90,6 +90,7 @@ func lSleep(L *lua.LState) int {
 func lImport(L *lua.LState) int {
 	ctx := upContext(L)
 	name := L.CheckString(1)
+	L.Pop(L.GetTop())
 	b, err := afero.ReadFile(ctx.fs, name)
 	if err != nil {
 		L.RaiseError(err.Error())
@@ -97,5 +98,5 @@ func lImport(L *lua.LState) int {
 	if err := L.DoString(string(b)); err != nil {
 		L.RaiseError(err.Error())
 	}
-	return L.GetTop() - 1
+	return L.GetTop()
 }

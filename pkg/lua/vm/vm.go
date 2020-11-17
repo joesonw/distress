@@ -31,13 +31,13 @@ import (
 
 var idCounter int64
 
-func Compile(src string) (*lua.FunctionProto, error) {
-	chunk, err := luaparse.Parse(strings.NewReader(src), "vm.lua")
+func Compile(src, name string) (*lua.FunctionProto, error) {
+	chunk, err := luaparse.Parse(strings.NewReader(src), name)
 	if err != nil {
 		return nil, err
 	}
 
-	return lua.Compile(chunk, "vm.lua")
+	return lua.Compile(chunk, name)
 }
 
 type VM struct {

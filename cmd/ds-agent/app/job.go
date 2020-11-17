@@ -43,7 +43,7 @@ func newJob(
 		return nil, errors.Wrap(err, "unable to open entry file")
 	}
 
-	proto, err := luavm.Compile(string(source))
+	proto, err := luavm.Compile(string(source), entry)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to compile")
 	}
