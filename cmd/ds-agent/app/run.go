@@ -33,6 +33,7 @@ func MakeCmdRun(
 	pDirectory := cmd.Flags().StringP("directory", "d", "", "directory of contents")
 	pOut := cmd.Flags().StringP("out", "o", "console", "stats output target")
 	pStats := cmd.Flags().String("stats", "", "stats server")
+	pName := cmd.Flags().String("name", "", "job name")
 
 	cmd.Args = cobra.ExactValidArgs(1)
 	cmd.Run = func(cmd *cobra.Command, args []string) {
@@ -54,6 +55,7 @@ func MakeCmdRun(
 				reporter = metrics.Influx(
 					influxClient.WriteAPI(q.Get("org"), q.Get("bucket")),
 					time.Second,
+					*pName,
 				)
 			default:
 				logger.Fatal(fmt.Sprintf("output \"%s\" is not supoprted", u.Scheme), zap.Error(err))

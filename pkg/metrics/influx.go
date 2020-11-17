@@ -9,13 +9,14 @@ import (
 )
 
 type influx struct {
+	name     string
 	writeAPI influxdb2api.WriteAPI
 	metrics  []Metric
 	errs     []error
 	ticker   *time.Ticker
 }
 
-func Influx(writeAPI influxdb2api.WriteAPI, interval time.Duration) Reporter {
+func Influx(writeAPI influxdb2api.WriteAPI, interval time.Duration, name string) Reporter {
 	r := &influx{
 		writeAPI: writeAPI,
 		ticker:   time.NewTicker(interval),
@@ -48,6 +49,7 @@ func (r *influx) startTick() {
 }
 
 func (r *influx) tick() {
+
 	for _, metric := range r.metrics {
 		switch data := metric.(type) {
 		case *counter:
@@ -58,7 +60,7 @@ func (r *influx) tick() {
 					map[string]interface{}{
 						"count": data.value,
 					},
-					time.Now()))
+					time.Now()).AddTag("job", r.name))
 			}
 		case *gauge:
 			{
@@ -66,9 +68,10 @@ func (r *influx) tick() {
 					data.name,
 					data.tags,
 					map[string]interface{}{
-						"sum": mustFloat64(data.data.Sum()),
+						"sum":   mustFloat64(data.data.Sum()),
+						"count": data.data.Len(),
 					},
-					time.Now()))
+					time.Now()).AddTag("job", r.name))
 
 			}
 		case *rate:
@@ -79,7 +82,7 @@ func (r *influx) tick() {
 					map[string]interface{}{
 						"value": data.Value(),
 					},
-					time.Now()))
+					time.Now()).AddTag("job", r.name))
 			}
 		}
 	}
