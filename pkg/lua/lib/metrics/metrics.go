@@ -38,7 +38,7 @@ func Open(L *lua.LState, luaCtx *luacontext.Context) {
 
 func makeMetricsFunction(f func(name string, tags map[string]string) metrics.Metric) lua.LGFunction {
 	return func(L *lua.LState) int {
-		c := L.CheckUserData(1).Value.(*modContext)
+		c := L.CheckUserData(lua.UpvalueIndex(1)).Value.(*modContext)
 		name := L.CheckString(2)
 		metric := luautil.NewGlobalUniqueMetric(c.luaCtx.Global(), "*METRIC*-"+name, func() metrics.Metric {
 			tags := map[string]string{}
