@@ -1,9 +1,5 @@
 package metrics
 
-import (
-	"context"
-)
-
 type memory struct {
 	data *MemoryData
 }
@@ -65,39 +61,31 @@ func Memory(data *MemoryData) Reporter {
 
 func (memory) isReporter() {}
 
-func (m *memory) Report(ctx context.Context, metrics ...Metric) error {
+func (memory) Finish() error {
+	return nil
+}
+
+func (m *memory) Collect(metrics ...Metric) {
 	for _, metric := range metrics {
 		switch data := metric.(type) {
 		case *counter:
 			{
-				var count int64
-				for _, v := range data.counts {
-					count += v
-				}
 				m.data.Counters[data.name] = struct {
 					Count int64
 					Tags  map[string]string
 				}{
-					Count: count,
+					Count: data.value,
 					Tags:  data.tags,
 				}
 			}
 
 		case *rate:
 			{
-				var truthy float64
-				var total float64
-				for _, v := range data.values {
-					total += 1
-					if v {
-						truthy += 1
-					}
-				}
 				m.data.Rate[data.name] = struct {
 					Rate float64
 					Tags map[string]string
 				}{
-					Rate: truthy / total,
+					Rate: data.Value(),
 					Tags: data.tags,
 				}
 			}
@@ -133,5 +121,4 @@ func (m *memory) Report(ctx context.Context, metrics ...Metric) error {
 			}
 		}
 	}
-	return nil
 }

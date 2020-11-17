@@ -1,7 +1,6 @@
 package app
 
 import (
-	"context"
 	"fmt"
 	"sync"
 	"sync/atomic"
@@ -37,6 +36,7 @@ func newJob(
 	concurrency int,
 	envs map[string]string,
 	newFS func() afero.Fs,
+	reporter metrics.Reporter,
 ) (*Job, error) {
 	source, err := afero.ReadFile(fs, entry)
 	if err != nil {
@@ -48,7 +48,7 @@ func newJob(
 		return nil, errors.Wrap(err, "unable to compile")
 	}
 
-	global := luacontext.NewGlobal()
+	global := luacontext.NewGlobal(reporter)
 	vms := make([]*luavm.VM, concurrency)
 	for i := 0; i < concurrency; i++ {
 		vms[i] = luavm.New(logger, global, luavm.Parameters{
@@ -63,12 +63,15 @@ func newJob(
 		}
 	}
 
+	runMetric := metrics.Gauge("run_us", nil)
+	reporter.Collect(runMetric)
+
 	return &Job{
 		logger:      logger,
 		fs:          fs,
 		vms:         vms,
 		concurrency: concurrency,
-		runMetric:   metrics.Gauge("run_us", nil),
+		runMetric:   runMetric,
 		global:      global,
 		startedAt:   time.Now(),
 	}, nil
@@ -106,7 +109,7 @@ func (j *Job) run(shouldStop func() bool) {
 				}
 				start := time.Now()
 				if err := vm.Run(atomic.AddInt64(&counter, 1)); err != nil {
-					j.logger.With(zap.Error(err)).Error("error running script")
+					j.logger.Error("error running script", zap.Error(err))
 				}
 				since := time.Since(start)
 				j.runMetric.Add(float64(since.Microseconds()))
@@ -119,18 +122,9 @@ func (j *Job) run(shouldStop func() bool) {
 	wg.Wait()
 }
 
-func (j *Job) Report(reporter metrics.Reporter) {
-	err := j.global.ReportMetrics(context.TODO(), reporter)
-	if err != nil {
-		j.logger.With(zap.Error(err)).Error("unable to report metrics")
-	}
-}
-
 func (j *Job) Stats() (*Stats, error) {
 	data := metrics.MemoryData{}
-	if err := metrics.Memory(&data).Report(context.TODO(), j.runMetric); err != nil {
-		return nil, err
-	}
+	metrics.Memory(&data).Collect(j.runMetric)
 	return &Stats{
 		StartedAt:          j.startedAt.Unix(),
 		Concurrency:        int64(j.concurrency),

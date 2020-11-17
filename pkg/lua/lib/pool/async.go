@@ -97,7 +97,7 @@ func (p *AsyncPool) runTask(task AsyncTask) {
 
 	err := task.Do(ctx)
 	if err != nil {
-		p.logger.With(zap.Error(err)).Error("unable to handle async task")
+		p.logger.Error("unable to handle async task", zap.Error(err))
 	}
 }
 

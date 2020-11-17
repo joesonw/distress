@@ -179,7 +179,7 @@ func (p *ReleasePool) Clean() {
 			p.logger.Warn(fmt.Sprintf("resource#%d \"%s\" leaked, now releasing", g.id, g.resource.Name()))
 		}
 		if err != nil {
-			p.logger.With(zap.Error(err)).Error(fmt.Sprintf("resource#%d \"%s\" leaked, release encountered error", g.id, g.resource.Name()))
+			p.logger.Error(fmt.Sprintf("resource#%d \"%s\" leaked, release encountered error", g.id, g.resource.Name()), zap.Error(err))
 		}
 		return true
 	})

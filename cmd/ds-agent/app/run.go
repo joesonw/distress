@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/spf13/afero"
@@ -43,19 +44,19 @@ func MakeCmdRun(
 		default:
 			u, err := url.Parse(*pOut)
 			if err != nil {
-				logger.With(zap.Error(err)).Fatal("unable to parse --out/-o")
+				logger.Fatal("unable to parse --out/-o", zap.Error(err))
 			}
 			switch u.Scheme {
 			case "influx+http", "influx+https":
 				prot := strings.Split(u.Scheme, "+")[1]
 				q := u.Query()
+				influxClient := influxdb2.NewClient(fmt.Sprintf("%s://%s", prot, u.Host), q.Get("token"))
 				reporter = metrics.Influx(
-					influxdb2.NewClient(fmt.Sprintf("%s://%s", prot, u.Host), q.Get("token")),
-					q.Get("org"),
-					q.Get("bucket"),
+					influxClient.WriteAPI(q.Get("org"), q.Get("bucket")),
+					time.Second,
 				)
 			default:
-				logger.With(zap.Error(err)).Fatal(fmt.Sprintf("output \"%s\" is not supoprted", u.Scheme))
+				logger.Fatal(fmt.Sprintf("output \"%s\" is not supoprted", u.Scheme), zap.Error(err))
 			}
 		}
 
@@ -82,7 +83,7 @@ func MakeCmdRun(
 		} else if *pFile != "" {
 			fs, err = goutil.NewAferoFsByPath(*pFile)
 			if err != nil {
-				logger.With(zap.Error(err)).Error("unable to open file")
+				logger.Error("unable to open file", zap.Error(err))
 			}
 			newFSPath = filepath.Dir(*pFile)
 		} else {
@@ -96,15 +97,14 @@ func MakeCmdRun(
 
 		job, err := newJob(logger, fs, args[0], concurrency, envs, func() afero.Fs {
 			return afero.NewBasePathFs(afero.NewOsFs(), newFSPath)
-		})
-
+		}, reporter)
 		if err != nil {
-			logger.With(zap.Error(err)).Fatal("unable to create job")
+			logger.Fatal("unable to create job", zap.Error(err))
 		}
 
 		if s := *pStats; s != "" {
 			if err := startStatsServer(s, job); err != nil {
-				logger.With(zap.Error(err)).Fatal("unable to start stats server")
+				logger.Fatal("unable to start stats server", zap.Error(err))
 			}
 		}
 
@@ -117,8 +117,9 @@ func MakeCmdRun(
 			}
 			job.RunAmount(amount)
 		}
-
-		job.Report(reporter)
+		if err := reporter.Finish(); err != nil {
+			logger.Error("unable to report stast", zap.Error(err))
+		}
 	}
 
 	return cmd

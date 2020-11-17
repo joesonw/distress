@@ -2,24 +2,23 @@ package metrics
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 
 	"github.com/olekukonko/tablewriter"
 )
 
 type console struct {
+	metrics []Metric
 }
 
 func Console() Reporter {
-	return console{}
+	return &console{}
 }
 
 func (console) isReporter() {}
 
-func (console) Report(ctx context.Context, metrics ...Metric) error {
+func (c *console) Finish() error {
 	buf := bytes.NewBuffer(nil)
-
 	counterTable := tablewriter.NewWriter(buf)
 	counterTable.SetRowLine(true)
 	counterTable.SetHeader([]string{"Name", "Tags", "Count"})
@@ -32,35 +31,23 @@ func (console) Report(ctx context.Context, metrics ...Metric) error {
 	gaugeTable.SetRowLine(true)
 	gaugeTable.SetHeader([]string{"Name", "Tags", "Count", "Avg", "Total", "Min", "Med", "Max", "99.99%", "99.9%", "99%", "95%", "90%", "75%", "50%"})
 
-	for _, metric := range metrics {
+	for _, metric := range c.metrics {
 		switch data := metric.(type) {
 		case *counter:
 			{
-				var count int64
-				for _, v := range data.counts {
-					count += v
-				}
 				counterTable.Append([]string{
 					data.name,
 					sprintTags(data.tags),
-					sprintInt64(count),
+					sprintInt64(data.value),
 				})
 			}
 
 		case *rate:
 			{
-				var truthy float64
-				var total float64
-				for _, v := range data.values {
-					total += 1
-					if v {
-						truthy += 1
-					}
-				}
 				rateTable.Append([]string{
 					data.name,
 					sprintTags(data.tags),
-					sprintFloat64(truthy*100/total, nil) + "%",
+					sprintFloat64(data.Value()*100, nil) + "%",
 				})
 			}
 		case *gauge:
@@ -95,4 +82,8 @@ func (console) Report(ctx context.Context, metrics ...Metric) error {
 
 	fmt.Println(buf.String())
 	return nil
+}
+
+func (c *console) Collect(metrics ...Metric) {
+	c.metrics = append(c.metrics, metrics...)
 }

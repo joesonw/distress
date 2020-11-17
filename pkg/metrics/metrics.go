@@ -1,12 +1,11 @@
 package metrics
 
 import (
-	"context"
 	"fmt"
 	"strconv"
 	"strings"
 	"sync"
-	"time"
+	"sync/atomic"
 
 	"github.com/montanaflynn/stats"
 )
@@ -31,7 +30,8 @@ const (
 
 type Reporter interface {
 	isReporter()
-	Report(ctx context.Context, metrics ...Metric) error
+	Finish() error
+	Collect(metrics ...Metric)
 }
 
 type Metric interface {
@@ -40,18 +40,17 @@ type Metric interface {
 }
 
 type counter struct {
-	mu        *sync.Mutex
-	name      string
-	counts    []int64
-	tags      map[string]string
-	timestamp []time.Time
+	name  string
+	value int64
+	tags  map[string]string
 }
 
 func (c *counter) Add(v float64) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	c.counts = append(c.counts, int64(v))
-	c.timestamp = append(c.timestamp, time.Now())
+	atomic.AddInt64(&c.value, int64(v))
+}
+
+func (c *counter) Value() int64 {
+	return c.value
 }
 
 func (c *counter) Type() Type {
@@ -60,25 +59,26 @@ func (c *counter) Type() Type {
 
 func Counter(name string, tags map[string]string) Metric {
 	return &counter{
-		mu:   &sync.Mutex{},
 		name: name,
 		tags: tags,
 	}
 }
 
 type gauge struct {
-	mu        *sync.Mutex
-	name      string
-	tags      map[string]string
-	data      stats.Float64Data
-	timestamp []time.Time
+	mu   *sync.Mutex
+	name string
+	tags map[string]string
+	data stats.Float64Data
 }
 
 func (c *gauge) Add(v float64) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.data = append(c.data, v)
-	c.timestamp = append(c.timestamp, time.Now())
+}
+
+func (c *gauge) Value() stats.Float64Data {
+	return c.data[:]
 }
 
 func (c *gauge) Type() Type {
@@ -94,18 +94,28 @@ func Gauge(name string, tags map[string]string) Metric {
 }
 
 type rate struct {
-	mu        *sync.Mutex
-	values    []bool
-	name      string
-	tags      map[string]string
-	timestamp []time.Time
+	mu     *sync.Mutex
+	values []bool
+	name   string
+	tags   map[string]string
 }
 
 func (c *rate) Add(v float64) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.values = append(c.values, v == 1)
-	c.timestamp = append(c.timestamp, time.Now())
+}
+
+func (c *rate) Value() float64 {
+	var truthy float64
+	var total float64
+	for _, v := range c.values {
+		total += 1
+		if v {
+			truthy += 1
+		}
+	}
+	return truthy / total
 }
 
 func (c *rate) Type() Type {

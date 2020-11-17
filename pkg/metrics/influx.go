@@ -1,81 +1,87 @@
 package metrics
 
 import (
-	"context"
+	"time"
 
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
+	influxdb2api "github.com/influxdata/influxdb-client-go/v2/api"
 	"go.uber.org/multierr"
 )
 
 type influx struct {
-	client      influxdb2.Client
-	org, bucket string
+	writeAPI influxdb2api.WriteAPI
+	metrics  []Metric
+	errs     []error
+	ticker   *time.Ticker
 }
 
-func Influx(client influxdb2.Client, org, bucket string) Reporter {
-	return &influx{
-		client: client,
-		org:    org,
-		bucket: bucket,
+func Influx(writeAPI influxdb2api.WriteAPI, interval time.Duration) Reporter {
+	r := &influx{
+		writeAPI: writeAPI,
+		ticker:   time.NewTicker(interval),
 	}
+	r.startTick()
+	return r
 }
 
 func (influx) isReporter() {}
 
-func (r *influx) Report(ctx context.Context, metrics ...Metric) error {
-	write := r.client.WriteAPI(r.org, r.bucket)
-	errCh := write.Errors()
-	var errs []error
+func (r *influx) Collect(metrics ...Metric) {
+	r.metrics = append(r.metrics, metrics...)
+}
+
+func (r *influx) Finish() error {
+	r.ticker.Stop()
+	return multierr.Combine(r.errs...)
+}
+
+func (r *influx) startTick() {
+	ch := r.writeAPI.Errors()
 	go func() {
-		for err := range errCh {
-			errs = append(errs, err)
+		select {
+		case err := <-ch:
+			r.errs = append(r.errs, err)
+		case <-r.ticker.C:
+			r.tick()
 		}
 	}()
-	for _, metric := range metrics {
+}
+
+func (r *influx) tick() {
+	for _, metric := range r.metrics {
 		switch data := metric.(type) {
 		case *counter:
 			{
-				var count int64
-				for i := range data.counts {
-					count += data.counts[i]
-					write.WritePoint(influxdb2.NewPoint(
-						data.name,
-						data.tags,
-						map[string]interface{}{
-							"count": count,
-						},
-						data.timestamp[i]))
-				}
+				r.writeAPI.WritePoint(influxdb2.NewPoint(
+					data.name,
+					data.tags,
+					map[string]interface{}{
+						"count": data.value,
+					},
+					time.Now()))
 			}
 		case *gauge:
 			{
-				var sum float64
-				for i := range data.data {
-					sum += data.data[i]
-					write.WritePoint(influxdb2.NewPoint(
-						data.name,
-						data.tags,
-						map[string]interface{}{
-							"sum": sum,
-						},
-						data.timestamp[i]))
-				}
+				r.writeAPI.WritePoint(influxdb2.NewPoint(
+					data.name,
+					data.tags,
+					map[string]interface{}{
+						"sum": mustFloat64(data.data.Sum()),
+					},
+					time.Now()))
 
 			}
 		case *rate:
 			{
-				for i := range data.values {
-					write.WritePoint(influxdb2.NewPoint(
-						data.name,
-						data.tags,
-						map[string]interface{}{
-							"value": data.values[i],
-						},
-						data.timestamp[i]))
-				}
+				r.writeAPI.WritePoint(influxdb2.NewPoint(
+					data.name,
+					data.tags,
+					map[string]interface{}{
+						"value": data.Value(),
+					},
+					time.Now()))
 			}
 		}
 	}
-	write.Flush()
-	return multierr.Combine(errs...)
+	r.writeAPI.Flush()
 }

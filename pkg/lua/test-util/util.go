@@ -16,6 +16,7 @@ import (
 	libjson "github.com/joesonw/distress/pkg/lua/lib/json"
 	libpool "github.com/joesonw/distress/pkg/lua/lib/pool"
 	libtime "github.com/joesonw/distress/pkg/lua/lib/time"
+	"github.com/joesonw/distress/pkg/metrics"
 )
 
 type Before func(t *testing.T, L *lua.LState, luaCtx *luacontext.Context)
@@ -73,7 +74,8 @@ func Run(t *testing.T, tests ...Testable) {
 			releasePool := libpool.NewRelease(logger)
 			defer releasePool.Clean()
 
-			luaCtx := luacontext.New(L, luacontext.NewGlobal(), releasePool, asyncPool, logger)
+			reporter := metrics.Memory(&metrics.MemoryData{})
+			luaCtx := luacontext.New(L, luacontext.NewGlobal(reporter), releasePool, asyncPool, logger)
 
 			lua.OpenBase(L)
 			lua.OpenPackage(L)

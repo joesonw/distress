@@ -1,22 +1,23 @@
 package context
 
 import (
-	"context"
 	"sync"
 
 	"github.com/joesonw/distress/pkg/metrics"
 )
 
 type Global struct {
+	reporter metrics.Reporter
+
 	uniqueMu  *sync.Mutex
 	uniqueMap map[string]interface{}
-
 	metricsMu *sync.Mutex
 	metrics   []metrics.Metric
 }
 
-func NewGlobal() *Global {
+func NewGlobal(reporter metrics.Reporter) *Global {
 	return &Global{
+		reporter:  reporter,
 		uniqueMu:  &sync.Mutex{},
 		metricsMu: &sync.Mutex{},
 		uniqueMap: map[string]interface{}{},
@@ -38,8 +39,5 @@ func (g *Global) RegisterMetric(m metrics.Metric) {
 	g.metricsMu.Lock()
 	defer g.metricsMu.Unlock()
 	g.metrics = append(g.metrics, m)
-}
-
-func (g *Global) ReportMetrics(ctx context.Context, r metrics.Reporter) error {
-	return r.Report(ctx, g.metrics...)
+	g.reporter.Collect(m)
 }
