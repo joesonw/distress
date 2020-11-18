@@ -13,6 +13,7 @@ import (
 	libbytes "github.com/joesonw/distress/pkg/lua/lib/bytes"
 	goclass "github.com/joesonw/distress/pkg/lua/lib/go-class"
 	libpool "github.com/joesonw/distress/pkg/lua/lib/pool"
+	libtime "github.com/joesonw/distress/pkg/lua/lib/time"
 )
 
 const moduleName = "fs"
@@ -130,7 +131,7 @@ func fsList(L *lua.LState) int {
 				f.RawSetString("name", lua.LString(info.Name()))
 				f.RawSetString("size", lua.LNumber(info.Size()))
 				f.RawSetString("dir", lua.LBool(info.IsDir()))
-				f.RawSetString("modtime", lua.LNumber(info.ModTime().Unix()))
+				f.RawSetString("modtime", libtime.New(L, info.ModTime()))
 				l.Append(f)
 			}
 			L.Push(l)
@@ -153,7 +154,7 @@ func fsStat(L *lua.LState) int {
 			f.RawSetString("name", lua.LString(info.Name()))
 			f.RawSetString("size", lua.LNumber(info.Size()))
 			f.RawSetString("dir", lua.LBool(info.IsDir()))
-			f.RawSetString("modtime", lua.LNumber(info.ModTime().Unix()))
+			f.RawSetString("modtime", libtime.New(L, info.ModTime()))
 			L.Push(f)
 			return 1
 		}, nil
