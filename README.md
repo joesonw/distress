@@ -95,12 +95,13 @@ local bytes = require "bytes"
 local s = bytes:new("hello")
 ```
 
-##### __add, __concat
+##### __add, __concat, __eq
 ```lua
 assert((bytes:new("hello") + bytes:new(" world")):string() == "hello world")
 assert((bytes:new("hello") + " world"):string() == "hello world")
 assert((bytes:new("hello") .. bytes:new(" world")):string() == "hello world")
 assert((bytes:new("hello") .. " world"):string() == "hello world")
+assert(bytes:new("hello") == bytes:new("hello"))
 ```
 
 ##### bytes:size()

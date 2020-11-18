@@ -1,6 +1,7 @@
 package bytes
 
 import (
+	"bytes"
 	"encoding/base32"
 	"encoding/base64"
 	"encoding/hex"
@@ -18,6 +19,8 @@ func Open(L *lua.LState, luaCtx *luacontext.Context) {
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), funcs))
 	L.SetField(mt, "__add", L.NewFunction(bytesAdd))
 	L.SetField(mt, "__concat", L.NewFunction(bytesAdd))
+	L.SetField(mt, "__eq", L.NewFunction(bytesEqual))
+	L.SetField(mt, "__tostring", L.NewFunction(bytesToString))
 
 	mod := L.RegisterModule(moduleName, map[string]lua.LGFunction{}).(*lua.LTable)
 	mod.RawSetString("new", L.NewClosure(func(L *lua.LState) int {
@@ -149,6 +152,33 @@ func bytesAdd(L *lua.LState) int {
 	default:
 		L.RaiseError("cannot perform __add on bytes and %s", other.Type().String())
 	}
+	return 1
+}
+
+func bytesEqual(L *lua.LState) int {
+	ctx := upContext(L)
+	other := L.Get(2)
+	println(other.Type().String())
+	switch other.Type() {
+	case lua.LTUserData:
+		{
+			otherCtx, ok := other.(*lua.LUserData).Value.(*context)
+			if !ok {
+				L.Push(lua.LBool(false))
+				return 1
+			}
+			L.Push(lua.LBool(bytes.Equal(otherCtx.bytes, ctx.bytes)))
+			return 1
+		}
+	default:
+		L.Push(lua.LBool(false))
+		return 1
+	}
+}
+
+func bytesToString(L *lua.LState) int {
+	ctx := upContext(L)
+	L.Push(lua.LString(ctx.bytes))
 	return 1
 }
 

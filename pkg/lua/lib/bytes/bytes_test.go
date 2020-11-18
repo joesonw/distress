@@ -21,6 +21,12 @@ var testTable = []struct {
 	script string
 	after  test_util.After
 }{{
+	name: "__eq bytes",
+	script: `
+		local a = bytes:new("hello")
+		assert(a == bytes:new("hello"))
+	`,
+}, {
 	name: "__concat bytes",
 	script: `
 		local a = bytes:new("hello")
