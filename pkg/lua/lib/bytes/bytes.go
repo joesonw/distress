@@ -17,6 +17,7 @@ func Open(L *lua.LState, luaCtx *luacontext.Context) {
 	mt := L.NewTypeMetatable(metaName)
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), funcs))
 	L.SetField(mt, "__add", L.NewFunction(bytesAdd))
+	L.SetField(mt, "__concat", L.NewFunction(bytesAdd))
 
 	mod := L.RegisterModule(moduleName, map[string]lua.LGFunction{}).(*lua.LTable)
 	mod.RawSetString("new", L.NewClosure(func(L *lua.LState) int {
