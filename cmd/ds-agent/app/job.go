@@ -124,7 +124,9 @@ func (j *Job) run(shouldStop func() bool) {
 
 func (j *Job) Stats() (*Stats, error) {
 	data := metrics.MemoryData{}
-	metrics.Memory(&data).Collect(j.runMetric)
+	reporter := metrics.Memory(&data)
+	reporter.Collect(j.runMetric)
+	_ = reporter.Finish()
 	return &Stats{
 		StartedAt:          j.startedAt.Unix(),
 		Concurrency:        int64(j.concurrency),

@@ -1,7 +1,8 @@
 package metrics
 
 type memory struct {
-	data *MemoryData
+	data    *MemoryData
+	metrics []Metric
 }
 
 type MemoryData struct {
@@ -61,19 +62,15 @@ func Memory(data *MemoryData) Reporter {
 
 func (memory) isReporter() {}
 
-func (memory) Finish() error {
-	return nil
-}
-
-func (m *memory) Collect(metrics ...Metric) {
-	for _, metric := range metrics {
+func (m *memory) Finish() error {
+	for _, metric := range m.metrics {
 		switch data := metric.(type) {
 		case *counter:
 			m.data.Counters[data.name] = struct {
 				Count int64
 				Tags  map[string]string
 			}{
-				Count: data.value,
+				Count: data.Value(),
 				Tags:  data.tags,
 			}
 
@@ -117,4 +114,9 @@ func (m *memory) Collect(metrics ...Metric) {
 			}
 		}
 	}
+	return nil
+}
+
+func (m *memory) Collect(metrics ...Metric) {
+	m.metrics = append(m.metrics, metrics...)
 }

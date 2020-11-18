@@ -121,7 +121,6 @@ func New(logger *zap.Logger, global *luacontext.Global, params Parameters) *VM {
 		asyncPool:   asyncPool,
 		releasePool: releasePool,
 	}
-
 	return vm
 }
 
