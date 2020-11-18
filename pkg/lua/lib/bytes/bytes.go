@@ -16,6 +16,7 @@ const moduleName = "bytes"
 func Open(L *lua.LState, luaCtx *luacontext.Context) {
 	mt := L.NewTypeMetatable(metaName)
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), funcs))
+	L.SetField(mt, "__add", L.NewFunction(bytesAdd))
 
 	mod := L.RegisterModule(moduleName, map[string]lua.LGFunction{}).(*lua.LTable)
 	mod.RawSetString("new", L.NewClosure(func(L *lua.LState) int {
@@ -119,6 +120,35 @@ func New(L *lua.LState, bytes []byte) lua.LValue {
 
 func upContext(L *lua.LState) *context {
 	return L.CheckUserData(1).Value.(*context)
+}
+
+func bytesAdd(L *lua.LState) int {
+	ctx := upContext(L)
+	other := L.Get(2)
+	switch other.Type() {
+	case lua.LTString:
+		{
+			s := other.String()
+			b := make([]byte, len(ctx.bytes)+len(s))
+			copy(b, ctx.bytes)
+			copy(b[len(ctx.bytes):], s)
+			L.Push(New(L, b))
+		}
+	case lua.LTUserData:
+		{
+			otherCtx, ok := other.(*lua.LUserData).Value.(*context)
+			if !ok {
+				L.RaiseError("cannot perform __add on bytes and %s", other.Type().String())
+			}
+			b := make([]byte, len(ctx.bytes)+len(otherCtx.bytes))
+			copy(b, ctx.bytes)
+			copy(b[len(ctx.bytes):], otherCtx.bytes)
+			L.Push(New(L, b))
+		}
+	default:
+		L.RaiseError("cannot perform __add on bytes and %s", other.Type().String())
+	}
+	return 1
 }
 
 var funcs = map[string]lua.LGFunction{
