@@ -20,7 +20,34 @@ func Open(L *lua.LState, luaCtx *luacontext.Context) {
 	mod := L.RegisterModule(moduleName, map[string]lua.LGFunction{}).(*lua.LTable)
 	mod.RawSetString("new", L.NewClosure(func(L *lua.LState) int {
 		s := L.CheckString(2)
-		L.Push(New(L, []byte(s)))
+		encoding := ""
+		if e := L.Get(3); e != lua.LNil {
+			encoding = e.String()
+		}
+
+		switch encoding {
+		case "base64":
+			if b, err := base64.StdEncoding.DecodeString(s); err != nil {
+				L.RaiseError(err.Error())
+			} else {
+				L.Push(New(L, b))
+			}
+		case "base32":
+			if b, err := base32.StdEncoding.DecodeString(s); err != nil {
+				L.RaiseError(err.Error())
+			} else {
+				L.Push(New(L, b))
+			}
+		case "hex":
+			if b, err := hex.DecodeString(s); err != nil {
+				L.RaiseError(err.Error())
+			} else {
+				L.Push(New(L, b))
+			}
+		default:
+			L.Push(New(L, []byte(s)))
+		}
+
 		return 1
 	}))
 }
@@ -102,14 +129,15 @@ var funcs = map[string]lua.LGFunction{
 	},
 	"string": func(L *lua.LState) int {
 		ctx := upContext(L)
-		encoding := L.Get(2)
-		if encoding == lua.LString("base64") {
+		encoding := L.Get(2).String()
+		switch encoding {
+		case "base64":
 			L.Push(lua.LString(base64.StdEncoding.EncodeToString(ctx.bytes)))
-		} else if encoding == lua.LString("base32") {
+		case "base32":
 			L.Push(lua.LString(base32.StdEncoding.EncodeToString(ctx.bytes)))
-		} else if encoding == lua.LString("hex") {
+		case "hex":
 			L.Push(lua.LString(hex.EncodeToString(ctx.bytes)))
-		} else {
+		default:
 			L.Push(lua.LString(ctx.bytes))
 		}
 		return 1

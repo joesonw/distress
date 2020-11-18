@@ -21,6 +21,25 @@ var testTable = []struct {
 	script string
 	after  test_util.After
 }{{
+	name: "new",
+	script: `
+		data = bytes:new("hello")
+	`,
+	after: func(t *testing.T, L *lua.LState) {
+		b := libbytes.CheckValue(L, L.GetGlobal("data"))
+		assert.True(t, bytes.Equal(b, []byte("hello")))
+	},
+}, {
+	name: "new(hex)",
+	script: `
+		data = bytes:new("af", "hex")
+	`,
+	after: func(t *testing.T, L *lua.LState) {
+		b := libbytes.CheckValue(L, L.GetGlobal("data"))
+		d, _ := hex.DecodeString("af")
+		assert.True(t, bytes.Equal(b, d))
+	},
+}, {
 	name: "size",
 	data: []byte("hello"),
 	script: `
