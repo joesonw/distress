@@ -9,7 +9,7 @@ import (
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
-	log.Fatal(http.ListenAndServe(":10080", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	log.Fatal(http.ListenAndServe(":8080", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		delay, _ := time.ParseDuration(r.URL.Query().Get("delay"))
 		if delay == 0 {
 			delay = time.Duration(rand.Float64() * 3 * float64(time.Millisecond))

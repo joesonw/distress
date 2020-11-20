@@ -29,7 +29,7 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 	s := grpc.NewServer()
 	RegisterEchoServer(s, &Server{})
-	lis, err := net.Listen("tcp", ":10090")
+	lis, err := net.Listen("tcp", ":8080")
 	if err != nil {
 		log.Fatal(err)
 	}
