@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+option go_package = "./;main";
+package grpc_example;
+
+import "message/message.proto";
+
+service Echo {
+    rpc Echo (message.Message) returns (message.Message) {
+    }
+}
