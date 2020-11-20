@@ -18,21 +18,21 @@ type netContext struct {
 	luaCtx   *luacontext.Context
 }
 
-func open(L *lua.LState, luaCtx *luacontext.Context, protocol string, class *goclass.Class) {
+func open(L *lua.LState, luaCtx *luacontext.Context, protocol string, class *goclass.Class) lua.LValue {
 	ud := L.NewUserData()
 	ud.Value = &netContext{
 		protocol: protocol,
 		class:    class,
 		luaCtx:   luaCtx,
 	}
-	mod := L.RegisterModule(protocol, map[string]lua.LGFunction{}).(*lua.LTable)
-	mod.RawSetString("open", L.NewClosure(netOpen, ud))
+	return L.NewClosure(netOpen, ud)
 }
 
 func Open(L *lua.LState, luaCtx *luacontext.Context) {
 	class := goclass.New(L, connMetaName, connFuncs)
-	open(L, luaCtx, "tcp", class)
-	open(L, luaCtx, "udp", class)
+	mod := L.RegisterModule("net", map[string]lua.LGFunction{}).(*lua.LTable)
+	mod.RawSetString("tcp", open(L, luaCtx, "tcp", class))
+	mod.RawSetString("udp", open(L, luaCtx, "udp", class))
 }
 
 func netOpen(L *lua.LState) int {
