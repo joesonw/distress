@@ -15,6 +15,7 @@ import (
 
 	luacontext "github.com/joesonw/distress/pkg/lua/context"
 	libbase "github.com/joesonw/distress/pkg/lua/lib/base"
+	libbuffer "github.com/joesonw/distress/pkg/lua/lib/buffer"
 	libbytes "github.com/joesonw/distress/pkg/lua/lib/bytes"
 	libcrypto "github.com/joesonw/distress/pkg/lua/lib/crypto"
 	libfs "github.com/joesonw/distress/pkg/lua/lib/fs"
@@ -107,6 +108,7 @@ func New(logger *zap.Logger, global *luacontext.Global, params Parameters) *VM {
 	libuuid.Open(L, luaCtx)
 	libcrypto.Open(L, luaCtx)
 	libmetrics.Open(L, luaCtx)
+	libbuffer.Open(L, luaCtx)
 
 	for k, v := range params.EnvVars {
 		L.Env.RawSetString(k, lua.LString(v))
