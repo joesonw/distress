@@ -26,7 +26,7 @@ func Open(L *lua.LState, luaCtx *luacontext.Context) {
 	mod := L.RegisterModule(moduleName, map[string]lua.LGFunction{}).(*lua.LTable)
 	ud := L.NewUserData()
 	ud.Value = &modContext{
-		timeClass: goclass.New(L, timeMetaName, timeFuncs),
+		timeClass: goclass.New(L, timeMetaName, timeFuncs).WithToString(L.NewFunction(timeFuncs["string"])),
 		luaCtx:    luaCtx,
 	}
 	L.SetFuncs(mod, modFuncs, ud)
