@@ -6,10 +6,10 @@ import (
 	"github.com/gobwas/ws"
 	lua "github.com/yuin/gopher-lua"
 
-	luacontext "github.com/joesonw/distress/pkg/lua/context"
-	libasync "github.com/joesonw/distress/pkg/lua/lib/async"
-	goclass "github.com/joesonw/distress/pkg/lua/lib/go-class"
-	libpool "github.com/joesonw/distress/pkg/lua/lib/pool"
+	luacontext "github.com/joesonw/lte/pkg/lua/context"
+	libasync "github.com/joesonw/lte/pkg/lua/lib/async"
+	goclass "github.com/joesonw/lte/pkg/lua/lib/go-class"
+	libpool "github.com/joesonw/lte/pkg/lua/lib/pool"
 )
 
 const moduleName = "websocket"

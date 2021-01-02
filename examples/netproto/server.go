@@ -7,7 +7,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 
-	"github.com/joesonw/distress/examples/netproto/message"
+	"github.com/joesonw/lte/examples/netproto/message"
 )
 
 func main() {

@@ -13,8 +13,8 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
-	"github.com/joesonw/distress/pkg/metrics"
-	goutil "github.com/joesonw/distress/pkg/util"
+	"github.com/joesonw/lte/pkg/metrics"
+	goutil "github.com/joesonw/lte/pkg/util"
 )
 
 func MakeCmdRun(
@@ -97,7 +97,7 @@ func MakeCmdRun(
 			concurrency = *pConcurrency
 		}
 
-		job, err := newJob(logger, fs, args[0], concurrency, envs, func() afero.Fs {
+		job, err := NewJob(logger, fs, args[0], concurrency, envs, func() afero.Fs {
 			return afero.NewBasePathFs(afero.NewOsFs(), newFSPath)
 		}, reporter)
 		if err != nil {

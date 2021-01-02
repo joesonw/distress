@@ -8,9 +8,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	lua "github.com/yuin/gopher-lua"
 
-	luacontext "github.com/joesonw/distress/pkg/lua/context"
-	libjson "github.com/joesonw/distress/pkg/lua/lib/json"
-	test_util "github.com/joesonw/distress/pkg/lua/test-util"
+	luacontext "github.com/joesonw/lte/pkg/lua/context"
+	libjson "github.com/joesonw/lte/pkg/lua/lib/json"
+	test_util "github.com/joesonw/lte/pkg/lua/test-util"
 )
 
 type stringer string

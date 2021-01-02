@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-const modPackageName = "github.com/joesonw/distress"
+const modPackageName = "github.com/joesonw/lte"
 
 func main() {
 	var files []string

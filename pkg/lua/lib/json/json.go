@@ -8,8 +8,8 @@ import (
 	"github.com/pkg/errors"
 	lua "github.com/yuin/gopher-lua"
 
-	luacontext "github.com/joesonw/distress/pkg/lua/context"
-	luautil "github.com/joesonw/distress/pkg/lua/util"
+	luacontext "github.com/joesonw/lte/pkg/lua/context"
+	luautil "github.com/joesonw/lte/pkg/lua/util"
 )
 
 var (

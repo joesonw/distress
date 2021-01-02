@@ -10,8 +10,8 @@ import (
 	lua "github.com/yuin/gopher-lua"
 	"golang.org/x/crypto/sha3"
 
-	luacontext "github.com/joesonw/distress/pkg/lua/context"
-	libbytes "github.com/joesonw/distress/pkg/lua/lib/bytes"
+	luacontext "github.com/joesonw/lte/pkg/lua/context"
+	libbytes "github.com/joesonw/lte/pkg/lua/lib/bytes"
 )
 
 const moduleName = "crypto"

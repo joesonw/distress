@@ -4,7 +4,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 	lua "github.com/yuin/gopher-lua"
 
-	luacontext "github.com/joesonw/distress/pkg/lua/context"
+	luacontext "github.com/joesonw/lte/pkg/lua/context"
 )
 
 const moduleName = "uuid"

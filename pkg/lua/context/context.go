@@ -8,7 +8,7 @@ import (
 	lua "github.com/yuin/gopher-lua"
 	"go.uber.org/zap"
 
-	libpool "github.com/joesonw/distress/pkg/lua/lib/pool"
+	libpool "github.com/joesonw/lte/pkg/lua/lib/pool"
 )
 
 type scope struct {

@@ -1,5 +1,5 @@
-![Workflow](https://github.com/joesonw/distress/workflows/Master/badge.svg)
-[![GoDoc](https://godoc.org/github.com/joesonw/distress?status.svg)](https://godoc.org/github.com/joesonw/distress)
+![Workflow](https://github.com/joesonw/lte/workflows/Master/badge.svg)
+[![GoDoc](https://godoc.org/github.com/joesonw/lte?status.svg)](https://godoc.org/github.com/joesonw/lte)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 
@@ -11,13 +11,13 @@
 
 # Usage
 
-`GO111MODULE=on go get github.com/joesonw/distress/cmd/ds-agent `
+`GO111MODULE=on go get github.com/joesonw/lte/cmd/ds-agent `
 
 `ds-agent run --debug -d ./examples/http -c 10 -n 100 main.lua`
 
 > other flags please see `ds-agent run -h`
 > 
-> see [examples](https://github.com/joesonw/distress/tree/master/examples) for more
+> see [examples](https://github.com/joesonw/lte/tree/master/examples) for more
 
 # How it works
 

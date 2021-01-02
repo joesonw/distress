@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	luacontext "github.com/joesonw/distress/pkg/lua/context"
-	"github.com/joesonw/distress/pkg/metrics"
+	luacontext "github.com/joesonw/lte/pkg/lua/context"
+	"github.com/joesonw/lte/pkg/metrics"
 )
 
 func TestGlobal(t *testing.T) {

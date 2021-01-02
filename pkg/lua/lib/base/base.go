@@ -8,10 +8,10 @@ import (
 	"github.com/spf13/afero"
 	lua "github.com/yuin/gopher-lua"
 
-	luacontext "github.com/joesonw/distress/pkg/lua/context"
-	libasync "github.com/joesonw/distress/pkg/lua/lib/async"
-	luautil "github.com/joesonw/distress/pkg/lua/util"
-	"github.com/joesonw/distress/pkg/metrics"
+	luacontext "github.com/joesonw/lte/pkg/lua/context"
+	libasync "github.com/joesonw/lte/pkg/lua/lib/async"
+	luautil "github.com/joesonw/lte/pkg/lua/util"
+	"github.com/joesonw/lte/pkg/metrics"
 )
 
 type baseContext struct {

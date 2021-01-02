@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/joesonw/distress/examples/grpc/message;message";
+option go_package = "github.com/joesonw/lte/examples/grpc/message;message";
 package message;
 
 message Message {

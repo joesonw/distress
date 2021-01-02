@@ -3,7 +3,7 @@ package metrics
 import (
 	lua "github.com/yuin/gopher-lua"
 
-	"github.com/joesonw/distress/pkg/metrics"
+	"github.com/joesonw/lte/pkg/metrics"
 )
 
 const metricMetaName = "*METRIC*"

@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
-	"github.com/joesonw/distress/cmd/ds-agent/app"
+	"github.com/joesonw/lte/cmd/ds-agent/app"
 )
 
 func main() {

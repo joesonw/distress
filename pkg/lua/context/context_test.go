@@ -10,7 +10,7 @@ import (
 	"go.uber.org/zap/zaptest"
 	"go.uber.org/zap/zaptest/observer"
 
-	luacontext "github.com/joesonw/distress/pkg/lua/context"
+	luacontext "github.com/joesonw/lte/pkg/lua/context"
 )
 
 func TestContext(t *testing.T) {

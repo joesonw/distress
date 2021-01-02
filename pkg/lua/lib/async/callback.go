@@ -5,7 +5,7 @@ import (
 
 	lua "github.com/yuin/gopher-lua"
 
-	"github.com/joesonw/distress/pkg/lua/lib/pool"
+	"github.com/joesonw/lte/pkg/lua/lib/pool"
 )
 
 func Deferred(L *lua.LState, asyncPool *pool.AsyncPool, f func(ctx context.Context) error) int {

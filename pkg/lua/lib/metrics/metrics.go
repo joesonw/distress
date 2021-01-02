@@ -3,10 +3,10 @@ package metrics
 import (
 	lua "github.com/yuin/gopher-lua"
 
-	luacontext "github.com/joesonw/distress/pkg/lua/context"
-	goclass "github.com/joesonw/distress/pkg/lua/lib/go-class"
-	luautil "github.com/joesonw/distress/pkg/lua/util"
-	"github.com/joesonw/distress/pkg/metrics"
+	luacontext "github.com/joesonw/lte/pkg/lua/context"
+	goclass "github.com/joesonw/lte/pkg/lua/lib/go-class"
+	luautil "github.com/joesonw/lte/pkg/lua/util"
+	"github.com/joesonw/lte/pkg/metrics"
 )
 
 const moduleName = "metrics"

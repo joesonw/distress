@@ -5,8 +5,8 @@ import (
 
 	lua "github.com/yuin/gopher-lua"
 
-	luacontext "github.com/joesonw/distress/pkg/lua/context"
-	goclass "github.com/joesonw/distress/pkg/lua/lib/go-class"
+	luacontext "github.com/joesonw/lte/pkg/lua/context"
+	goclass "github.com/joesonw/lte/pkg/lua/lib/go-class"
 )
 
 const moduleName = "time"

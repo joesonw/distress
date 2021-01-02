@@ -9,7 +9,7 @@ import (
 
 	"google.golang.org/grpc"
 
-	"github.com/joesonw/distress/examples/grpc/message"
+	"github.com/joesonw/lte/examples/grpc/message"
 )
 
 type Server struct {

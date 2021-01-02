@@ -7,11 +7,12 @@
 package main
 
 import (
+	reflect "reflect"
+
 	proto "github.com/golang/protobuf/proto"
-	message "github.com/joesonw/distress/examples/grpc/message"
+	message "github.com/joesonw/lte/examples/grpc/message"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	reflect "reflect"
 )
 
 const (

@@ -11,11 +11,11 @@ import (
 	lua "github.com/yuin/gopher-lua"
 	"google.golang.org/grpc"
 
-	luacontext "github.com/joesonw/distress/pkg/lua/context"
-	libasync "github.com/joesonw/distress/pkg/lua/lib/async"
-	libjson "github.com/joesonw/distress/pkg/lua/lib/json"
-	luautil "github.com/joesonw/distress/pkg/lua/util"
-	"github.com/joesonw/distress/pkg/metrics"
+	luacontext "github.com/joesonw/lte/pkg/lua/context"
+	libasync "github.com/joesonw/lte/pkg/lua/lib/async"
+	libjson "github.com/joesonw/lte/pkg/lua/lib/json"
+	luautil "github.com/joesonw/lte/pkg/lua/util"
+	"github.com/joesonw/lte/pkg/metrics"
 )
 
 type grpcClientConnContext struct {

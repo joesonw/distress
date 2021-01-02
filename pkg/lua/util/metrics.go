@@ -1,8 +1,8 @@
 package util
 
 import (
-	luacontext "github.com/joesonw/distress/pkg/lua/context"
-	"github.com/joesonw/distress/pkg/metrics"
+	luacontext "github.com/joesonw/lte/pkg/lua/context"
+	"github.com/joesonw/lte/pkg/metrics"
 )
 
 func NewGlobalUniqueMetric(global *luacontext.Global, name string, f func() metrics.Metric) metrics.Metric {

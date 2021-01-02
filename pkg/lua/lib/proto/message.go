@@ -5,9 +5,9 @@ import (
 	"github.com/jhump/protoreflect/dynamic"
 	lua "github.com/yuin/gopher-lua"
 
-	luacontext "github.com/joesonw/distress/pkg/lua/context"
-	libbytes "github.com/joesonw/distress/pkg/lua/lib/bytes"
-	libjson "github.com/joesonw/distress/pkg/lua/lib/json"
+	luacontext "github.com/joesonw/lte/pkg/lua/context"
+	libbytes "github.com/joesonw/lte/pkg/lua/lib/bytes"
+	libjson "github.com/joesonw/lte/pkg/lua/lib/json"
 )
 
 const messageMetaName = "*PROTO*MESSAGE*"

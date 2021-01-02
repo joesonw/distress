@@ -8,9 +8,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	lua "github.com/yuin/gopher-lua"
 
-	luacontext "github.com/joesonw/distress/pkg/lua/context"
-	libfs "github.com/joesonw/distress/pkg/lua/lib/fs"
-	test_util "github.com/joesonw/distress/pkg/lua/test-util"
+	luacontext "github.com/joesonw/lte/pkg/lua/context"
+	libfs "github.com/joesonw/lte/pkg/lua/lib/fs"
+	test_util "github.com/joesonw/lte/pkg/lua/test-util"
 )
 
 var testTable = []struct {

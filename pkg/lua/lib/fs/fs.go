@@ -8,12 +8,12 @@ import (
 	"github.com/spf13/afero"
 	lua "github.com/yuin/gopher-lua"
 
-	luacontext "github.com/joesonw/distress/pkg/lua/context"
-	libasync "github.com/joesonw/distress/pkg/lua/lib/async"
-	libbytes "github.com/joesonw/distress/pkg/lua/lib/bytes"
-	goclass "github.com/joesonw/distress/pkg/lua/lib/go-class"
-	libpool "github.com/joesonw/distress/pkg/lua/lib/pool"
-	libtime "github.com/joesonw/distress/pkg/lua/lib/time"
+	luacontext "github.com/joesonw/lte/pkg/lua/context"
+	libasync "github.com/joesonw/lte/pkg/lua/lib/async"
+	libbytes "github.com/joesonw/lte/pkg/lua/lib/bytes"
+	goclass "github.com/joesonw/lte/pkg/lua/lib/go-class"
+	libpool "github.com/joesonw/lte/pkg/lua/lib/pool"
+	libtime "github.com/joesonw/lte/pkg/lua/lib/time"
 )
 
 const moduleName = "fs"

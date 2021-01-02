@@ -5,9 +5,9 @@ import (
 
 	lua "github.com/yuin/gopher-lua"
 
-	luacontext "github.com/joesonw/distress/pkg/lua/context"
-	libgoio "github.com/joesonw/distress/pkg/lua/lib/go-io"
-	libpool "github.com/joesonw/distress/pkg/lua/lib/pool"
+	luacontext "github.com/joesonw/lte/pkg/lua/context"
+	libgoio "github.com/joesonw/lte/pkg/lua/lib/go-io"
+	libpool "github.com/joesonw/lte/pkg/lua/lib/pool"
 )
 
 const connMetaName = "*NET*CONN*"

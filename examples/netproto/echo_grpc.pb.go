@@ -5,7 +5,7 @@ package main
 import (
 	context "context"
 
-	message "github.com/joesonw/distress/examples/grpc/message"
+	message "github.com/joesonw/lte/examples/grpc/message"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"

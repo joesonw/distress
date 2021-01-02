@@ -3,7 +3,7 @@ package context
 import (
 	"sync"
 
-	"github.com/joesonw/distress/pkg/metrics"
+	"github.com/joesonw/lte/pkg/metrics"
 )
 
 type Global struct {

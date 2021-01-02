@@ -10,9 +10,9 @@ import (
 
 	lua "github.com/yuin/gopher-lua"
 
-	luacontext "github.com/joesonw/distress/pkg/lua/context"
-	libasync "github.com/joesonw/distress/pkg/lua/lib/async"
-	test_util "github.com/joesonw/distress/pkg/lua/test-util"
+	luacontext "github.com/joesonw/lte/pkg/lua/context"
+	libasync "github.com/joesonw/lte/pkg/lua/lib/async"
+	test_util "github.com/joesonw/lte/pkg/lua/test-util"
 )
 
 var testTable = []struct {

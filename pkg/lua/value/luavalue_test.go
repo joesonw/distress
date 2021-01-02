@@ -2,11 +2,12 @@ package value_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	lua "github.com/yuin/gopher-lua"
 
-	luavalue "github.com/joesonw/distress/pkg/lua/value"
+	luavalue "github.com/joesonw/lte/pkg/lua/value"
 )
 
 func TestLuaTableToStruct(t *testing.T) {
@@ -25,11 +26,12 @@ func TestLuaTableToStruct(t *testing.T) {
 	table.RawSetString("arr", arr)
 
 	type S struct {
-		Int64  int64   `json:"int64,omitempty"`
-		Float  float64 `json:"float,omitempty"`
-		String string  `json:"string,omitempty"`
-		Bool   bool    `json:"bool,omitempty"`
-		Arr    []int64 `json:"arr,omitempty"`
+		Int64    int64         `json:"int64,omitempty"`
+		Float    float64       `json:"float,omitempty"`
+		String   string        `json:"string,omitempty"`
+		Bool     bool          `json:"bool,omitempty"`
+		Arr      []int64       `json:"arr,omitempty"`
+		Duration time.Duration `json:"duration,omitempty"`
 	}
 
 	s := S{}

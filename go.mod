@@ -1,4 +1,4 @@
-module github.com/joesonw/distress
+module github.com/joesonw/lte
 
 go 1.14
 

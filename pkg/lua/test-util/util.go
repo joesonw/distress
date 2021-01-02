@@ -10,13 +10,13 @@ import (
 	lua "github.com/yuin/gopher-lua"
 	"go.uber.org/zap"
 
-	luacontext "github.com/joesonw/distress/pkg/lua/context"
-	libbase "github.com/joesonw/distress/pkg/lua/lib/base"
-	libbytes "github.com/joesonw/distress/pkg/lua/lib/bytes"
-	libjson "github.com/joesonw/distress/pkg/lua/lib/json"
-	libpool "github.com/joesonw/distress/pkg/lua/lib/pool"
-	libtime "github.com/joesonw/distress/pkg/lua/lib/time"
-	"github.com/joesonw/distress/pkg/metrics"
+	luacontext "github.com/joesonw/lte/pkg/lua/context"
+	libbase "github.com/joesonw/lte/pkg/lua/lib/base"
+	libbytes "github.com/joesonw/lte/pkg/lua/lib/bytes"
+	libjson "github.com/joesonw/lte/pkg/lua/lib/json"
+	libpool "github.com/joesonw/lte/pkg/lua/lib/pool"
+	libtime "github.com/joesonw/lte/pkg/lua/lib/time"
+	"github.com/joesonw/lte/pkg/metrics"
 )
 
 type Before func(t *testing.T, L *lua.LState, luaCtx *luacontext.Context)

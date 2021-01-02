@@ -7,8 +7,8 @@ import (
 
 	lua "github.com/yuin/gopher-lua"
 
-	libjson "github.com/joesonw/distress/pkg/lua/lib/json"
-	luautil "github.com/joesonw/distress/pkg/lua/util"
+	libjson "github.com/joesonw/lte/pkg/lua/lib/json"
+	luautil "github.com/joesonw/lte/pkg/lua/util"
 )
 
 type Object struct {

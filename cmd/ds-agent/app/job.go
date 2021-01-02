@@ -10,9 +10,9 @@ import (
 	"github.com/spf13/afero"
 	"go.uber.org/zap"
 
-	luacontext "github.com/joesonw/distress/pkg/lua/context"
-	luavm "github.com/joesonw/distress/pkg/lua/vm"
-	"github.com/joesonw/distress/pkg/metrics"
+	luacontext "github.com/joesonw/lte/pkg/lua/context"
+	luavm "github.com/joesonw/lte/pkg/lua/vm"
+	"github.com/joesonw/lte/pkg/metrics"
 )
 
 type Job struct {
@@ -29,7 +29,7 @@ type Job struct {
 	totalDuration  time.Duration
 }
 
-func newJob(
+func NewJob(
 	logger *zap.Logger,
 	fs afero.Fs,
 	entry string,

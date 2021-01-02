@@ -8,7 +8,7 @@ import (
 
 	"go.uber.org/zap"
 
-	goutil "github.com/joesonw/distress/pkg/util"
+	goutil "github.com/joesonw/lte/pkg/util"
 )
 
 type AsyncTask interface {

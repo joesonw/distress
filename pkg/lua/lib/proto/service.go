@@ -5,7 +5,7 @@ import (
 	"github.com/jhump/protoreflect/dynamic/grpcdynamic"
 	lua "github.com/yuin/gopher-lua"
 
-	luacontext "github.com/joesonw/distress/pkg/lua/context"
+	luacontext "github.com/joesonw/lte/pkg/lua/context"
 )
 
 type serviceContext struct {
