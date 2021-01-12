@@ -6,7 +6,6 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
-	"time"
 
 	"github.com/spf13/afero"
 	lua "github.com/yuin/gopher-lua"
@@ -21,10 +20,10 @@ import (
 	libfs "github.com/joesonw/lte/pkg/lua/lib/fs"
 	libhttp "github.com/joesonw/lte/pkg/lua/lib/http"
 	libjson "github.com/joesonw/lte/pkg/lua/lib/json"
-	libmetrics "github.com/joesonw/lte/pkg/lua/lib/metrics"
 	libnet "github.com/joesonw/lte/pkg/lua/lib/net"
 	libpool "github.com/joesonw/lte/pkg/lua/lib/pool"
 	libproto "github.com/joesonw/lte/pkg/lua/lib/proto"
+	libstat "github.com/joesonw/lte/pkg/lua/lib/stat"
 	libtime "github.com/joesonw/lte/pkg/lua/lib/time"
 	libuuid "github.com/joesonw/lte/pkg/lua/lib/uuid"
 	libwebsocket "github.com/joesonw/lte/pkg/lua/lib/websocket"
@@ -53,26 +52,14 @@ type VM struct {
 }
 
 type Parameters struct {
-	AsyncPoolConcurrency int
-	AsyncPoolTimeout     time.Duration
-	AsyncPoolBufferSize  int
-	EnvVars              map[string]string
-	Filesystem           afero.Fs
+	EnvVars    map[string]string
+	Filesystem afero.Fs
 }
 
-func New(logger *zap.Logger, global *luacontext.Global, params Parameters) *VM {
+func New(logger *zap.Logger, asyncPool *libpool.AsyncPool, global *luacontext.Global, params Parameters) *VM {
 	id := atomic.AddInt64(&idCounter, 1)
 	logger = logger.With(zap.Int64("vm_id", id))
 
-	if params.AsyncPoolConcurrency <= 0 {
-		params.AsyncPoolConcurrency = 4
-	}
-
-	if params.AsyncPoolBufferSize <= 0 || params.AsyncPoolBufferSize < params.AsyncPoolConcurrency {
-		params.AsyncPoolBufferSize = params.AsyncPoolConcurrency * 16
-	}
-
-	asyncPool := libpool.NewAsync(logger, params.AsyncPoolConcurrency, params.AsyncPoolTimeout, params.AsyncPoolBufferSize)
 	releasePool := libpool.NewRelease(logger)
 	asyncPool.Start()
 
@@ -107,7 +94,7 @@ func New(logger *zap.Logger, global *luacontext.Global, params Parameters) *VM {
 	libnet.Open(L, luaCtx)
 	libuuid.Open(L, luaCtx)
 	libcrypto.Open(L, luaCtx)
-	libmetrics.Open(L, luaCtx)
+	libstat.Open(L, luaCtx)
 	libbuffer.Open(L, luaCtx)
 
 	for k, v := range params.EnvVars {

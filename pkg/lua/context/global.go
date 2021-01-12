@@ -3,23 +3,20 @@ package context
 import (
 	"sync"
 
-	"github.com/joesonw/lte/pkg/metrics"
+	"github.com/joesonw/lte/pkg/stat"
 )
 
 type Global struct {
-	reporter metrics.Reporter
+	reporter stat.Reporter
 
 	uniqueMu  *sync.Mutex
 	uniqueMap map[string]interface{}
-	metricsMu *sync.Mutex
-	metrics   []metrics.Metric
 }
 
-func NewGlobal(reporter metrics.Reporter) *Global {
+func NewGlobal(reporter stat.Reporter) *Global {
 	return &Global{
 		reporter:  reporter,
 		uniqueMu:  &sync.Mutex{},
-		metricsMu: &sync.Mutex{},
 		uniqueMap: map[string]interface{}{},
 	}
 }
@@ -35,9 +32,6 @@ func (g *Global) Unique(name string, do func() interface{}) interface{} {
 	return in
 }
 
-func (g *Global) RegisterMetric(m metrics.Metric) {
-	g.metricsMu.Lock()
-	defer g.metricsMu.Unlock()
-	g.metrics = append(g.metrics, m)
-	g.reporter.Collect(m)
+func (g *Global) Report(stats ...*stat.Stat) {
+	g.reporter.Report(stats...)
 }

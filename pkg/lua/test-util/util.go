@@ -15,8 +15,9 @@ import (
 	libbytes "github.com/joesonw/lte/pkg/lua/lib/bytes"
 	libjson "github.com/joesonw/lte/pkg/lua/lib/json"
 	libpool "github.com/joesonw/lte/pkg/lua/lib/pool"
+	libstat "github.com/joesonw/lte/pkg/lua/lib/stat"
 	libtime "github.com/joesonw/lte/pkg/lua/lib/time"
-	"github.com/joesonw/lte/pkg/metrics"
+	"github.com/joesonw/lte/pkg/stat"
 )
 
 type Before func(t *testing.T, L *lua.LState, luaCtx *luacontext.Context)
@@ -74,7 +75,7 @@ func Run(t *testing.T, tests ...Testable) {
 			releasePool := libpool.NewRelease(logger)
 			defer releasePool.Clean()
 
-			reporter := metrics.Memory(&metrics.MemoryData{})
+			reporter := stat.Console()
 			luaCtx := luacontext.New(L, luacontext.NewGlobal(reporter), releasePool, asyncPool, logger)
 
 			lua.OpenBase(L)
@@ -87,6 +88,7 @@ func Run(t *testing.T, tests ...Testable) {
 			libbase.Open(L, luaCtx, afero.NewMemMapFs())
 			libjson.Open(L, luaCtx)
 			libbytes.Open(L, luaCtx)
+			libstat.Open(L, luaCtx)
 
 			libtime.Open(L, luaCtx)
 

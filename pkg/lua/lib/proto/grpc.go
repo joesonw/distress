@@ -15,7 +15,7 @@ import (
 	libasync "github.com/joesonw/lte/pkg/lua/lib/async"
 	libjson "github.com/joesonw/lte/pkg/lua/lib/json"
 	luautil "github.com/joesonw/lte/pkg/lua/util"
-	"github.com/joesonw/lte/pkg/metrics"
+	"github.com/joesonw/lte/pkg/stat"
 )
 
 type grpcClientConnContext struct {
@@ -90,18 +90,6 @@ func serviceClientCall(L *lua.LState) int {
 			}
 			serviceName := c.desc.GetFullyQualifiedName()
 			methodName := method.GetFullyQualifiedName()
-			perfMetric := luautil.NewGlobalUniqueMetric(c.luaCtx.Global(), "*GRPC*_perf", func() metrics.Metric {
-				return metrics.Gauge("grpc_perf_us", map[string]string{
-					"service": serviceName,
-					"method":  methodName,
-				})
-			}).(metrics.Metric)
-			rateMetric := luautil.NewGlobalUniqueMetric(c.luaCtx.Global(), "*GRPC*_rate", func() metrics.Metric {
-				return metrics.Rate("grpc_rate", map[string]string{
-					"service": serviceName,
-					"method":  methodName,
-				})
-			}).(metrics.Metric)
 
 			bytes, err := libjson.Marshal(reqObj)
 			if err != nil {
@@ -116,11 +104,13 @@ func serviceClientCall(L *lua.LState) int {
 			start := time.Now()
 			resMessage, err := c.client.InvokeRpc(ctx, method, req)
 			if err != nil {
-				rateMetric.Add(0)
 				return nil, err
 			}
-			rateMetric.Add(1)
-			perfMetric.Add(float64(time.Since(start).Microseconds()))
+			s := stat.New("grpc")
+			s.Tag("service", serviceName)
+			s.Tag("method", methodName)
+			s.Int64Field("cost_ns", time.Since(start).Nanoseconds())
+			luautil.ReportContextStat(c.luaCtx, s)
 
 			res, err := dynamic.AsDynamicMessage(resMessage)
 			if err != nil {

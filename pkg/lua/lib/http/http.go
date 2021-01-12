@@ -6,13 +6,17 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
+	"time"
 
 	lua "github.com/yuin/gopher-lua"
 
 	luacontext "github.com/joesonw/lte/pkg/lua/context"
 	libasync "github.com/joesonw/lte/pkg/lua/lib/async"
 	libbytes "github.com/joesonw/lte/pkg/lua/lib/bytes"
+	luautil "github.com/joesonw/lte/pkg/lua/util"
+	"github.com/joesonw/lte/pkg/stat"
 )
 
 const moduleName = "http"
@@ -75,6 +79,7 @@ func lDo(L *lua.LState) int {
 			}
 		}
 
+		start := time.Now()
 		res, err := c.client.Do(req)
 		if err != nil {
 			return nil, err
@@ -98,6 +103,10 @@ func lDo(L *lua.LState) int {
 			return returnResult, err
 		}
 
+		luautil.ReportContextStat(c.luaCtx, stat.New("http").
+			Tag("url", url).
+			Tag("status", strconv.Itoa(res.StatusCode)).
+			Int64Field("cost_ns", time.Since(start).Nanoseconds()))
 		return returnResult, nil
 	})
 }

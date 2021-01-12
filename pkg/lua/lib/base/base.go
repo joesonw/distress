@@ -10,8 +10,7 @@ import (
 
 	luacontext "github.com/joesonw/lte/pkg/lua/context"
 	libasync "github.com/joesonw/lte/pkg/lua/lib/async"
-	luautil "github.com/joesonw/lte/pkg/lua/util"
-	"github.com/joesonw/lte/pkg/metrics"
+	"github.com/joesonw/lte/pkg/stat"
 )
 
 type baseContext struct {
@@ -59,19 +58,34 @@ func lPrint(L *lua.LState) int {
 func lGroup(L *lua.LState) int {
 	ctx := upContext(L)
 	name := L.CheckString(1)
-	fn := L.CheckFunction(2)
-	defer ctx.luaCtx.Enter(name).Exit()
+	arg2 := L.Get(2)
+	var fn *lua.LFunction
+	var tagPairs []string
+	if arg2.Type() == lua.LTTable {
+		table := arg2.(*lua.LTable)
+		table.ForEach(func(k, v lua.LValue) {
+			tagPairs = append(tagPairs, k.String(), v.String())
+		})
+		fn = L.CheckFunction(3)
+	} else {
+		fn = L.CheckFunction(2)
+	}
+	defer ctx.luaCtx.Enter(name, tagPairs...).Exit()
 	start := time.Now()
 	err := L.CallByParam(lua.P{
 		Fn:      fn,
 		Protect: true,
 	})
 	cost := time.Since(start)
-	scopeName := ctx.luaCtx.Scope()
-	metric := luautil.NewGlobalUniqueMetric(ctx.luaCtx.Global(), scopeName, func() metrics.Metric {
-		return metrics.Gauge(scopeName+"_us", nil)
-	})
-	metric.Add(float64(cost.Microseconds()))
+	scopeName := ctx.luaCtx.ScopeName()
+	if scopeName != "" {
+		s := stat.New(scopeName)
+		for k, v := range ctx.luaCtx.Tags() {
+			s.Tag(k, v)
+		}
+		s.Int64Field("cost_ns", cost.Nanoseconds())
+		ctx.luaCtx.Global().Report(s)
+	}
 	if err != nil {
 		L.RaiseError(err.Error())
 	}

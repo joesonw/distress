@@ -2,18 +2,15 @@ package app
 
 import (
 	"fmt"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
-	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
-	"github.com/joesonw/lte/pkg/metrics"
+	"github.com/joesonw/lte/pkg/stat"
 	goutil "github.com/joesonw/lte/pkg/util"
 )
 
@@ -32,34 +29,16 @@ func MakeCmdRun(
 	pFile := cmd.Flags().StringP("file", "f", "", "zip file of contents")
 	pDirectory := cmd.Flags().StringP("directory", "d", "", "directory of contents")
 	pOut := cmd.Flags().StringP("out", "o", "console", "stats output target")
-	pStats := cmd.Flags().String("stats", "", "stats server")
-	pName := cmd.Flags().String("name", "", "job name")
 
 	cmd.Args = cobra.ExactValidArgs(1)
 	cmd.Run = func(cmd *cobra.Command, args []string) {
 		logger := *pLogger
-		var reporter metrics.Reporter
+		var reporter stat.Reporter
 		switch *pOut {
 		case "console":
-			reporter = metrics.Console()
+			reporter = stat.Console()
 		default:
-			u, err := url.Parse(*pOut)
-			if err != nil {
-				logger.Fatal("unable to parse --out/-o", zap.Error(err))
-			}
-			switch u.Scheme {
-			case "influx+http", "influx+https":
-				prot := strings.Split(u.Scheme, "+")[1]
-				q := u.Query()
-				influxClient := influxdb2.NewClient(fmt.Sprintf("%s://%s", prot, u.Host), q.Get("token"))
-				reporter = metrics.Influx(
-					influxClient.WriteAPI(q.Get("org"), q.Get("bucket")),
-					time.Second,
-					*pName,
-				)
-			default:
-				logger.Fatal(fmt.Sprintf("output \"%s\" is not supoprted", u.Scheme), zap.Error(err))
-			}
+			logger.Fatal(fmt.Sprintf("output \"%s\" is not supoprted", *pOut))
 		}
 
 		envs := map[string]string{}
@@ -102,12 +81,6 @@ func MakeCmdRun(
 		}, reporter)
 		if err != nil {
 			logger.Fatal("unable to create job", zap.Error(err))
-		}
-
-		if s := *pStats; s != "" {
-			if err := startStatsServer(s, job); err != nil {
-				logger.Fatal("unable to start stats server", zap.Error(err))
-			}
 		}
 
 		if *pDuration > 0 {

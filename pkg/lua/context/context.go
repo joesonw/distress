@@ -111,21 +111,28 @@ func (c *Context) Logger() *zap.Logger {
 
 func (c *Context) Tags() map[string]string {
 	tags := map[string]string{}
-	var names []string
 	for i := range c.scopes {
-		if c.scopes[i].name != "" {
-			names = append(names, c.scopes[i].name)
-		}
 		if len(c.scopes[i].tags) > 0 {
 			for k, v := range c.scopes[i].tags {
 				tags[k] = v
 			}
 		}
 	}
-	if len(names) > 0 {
-		tags["scope"] = strings.Join(names, ".")
-	}
 	return tags
+}
+
+func (c *Context) ScopeName() string {
+	var names []string
+	for i := range c.scopes {
+		if c.scopes[i].name != "" {
+			names = append(names, c.scopes[i].name)
+		}
+	}
+	s := ""
+	if len(names) > 0 {
+		s += strings.Join(names, ".")
+	}
+	return s
 }
 
 func (c *Context) Scope() string {
