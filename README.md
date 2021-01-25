@@ -5,7 +5,7 @@
 
 # Introduction
 
-**DIS**tributed s**TRESS** testbed
+**Lua Test Environment**
 
 > Currently, only test agent is implemented.
 
