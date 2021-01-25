@@ -109,7 +109,7 @@ func (j *Job) Run(shouldStop func() bool) {
 					j.logger.Error("error running script", zap.Error(err))
 				}
 				since := time.Since(start)
-				j.statReporter.Report(stat.New("run").Field("cost", float64(since.Nanoseconds())))
+				j.statReporter.Report(stat.New("run").Int64Field("cost", since.Nanoseconds()))
 				atomic.AddInt64(&j.finishedAmount, 1)
 				vm.Reset()
 			}
