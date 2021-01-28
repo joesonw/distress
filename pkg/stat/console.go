@@ -19,7 +19,7 @@ func (console) Report(stats ...*Stat) {
 			tags = append(tags, fmt.Sprintf(",%s=%s", k, v))
 		}
 		for k, v := range stat.Fields {
-			fields = append(fields, fmt.Sprintf("%s=%v", k, v))
+			fields = append(fields, fmt.Sprintf("%s=%f", k, v))
 		}
 		fmt.Printf("%s%s %s %d", stat.Name, strings.Join(tags, ""), strings.Join(fields, ","), stat.Timestamp.UnixNano())
 		println()

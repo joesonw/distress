@@ -9,7 +9,7 @@ type Stat struct {
 	Name      string
 	Timestamp time.Time
 	Tags      map[string]string
-	Fields    map[string]interface{}
+	Fields    map[string]float64
 }
 
 func New(name string) *Stat {
@@ -17,7 +17,7 @@ func New(name string) *Stat {
 		Name:      name,
 		Timestamp: time.Now(),
 		Tags:      map[string]string{},
-		Fields:    map[string]interface{}{},
+		Fields:    map[string]float64{},
 	}
 }
 
@@ -37,12 +37,12 @@ func (s *Stat) FloatField(name string, value float64) *Stat {
 }
 
 func (s *Stat) IntField(name string, value int) *Stat {
-	s.Fields[name] = value
+	s.Fields[name] = float64(value)
 	return s
 }
 
 func (s *Stat) Int64Field(name string, value int64) *Stat {
-	s.Fields[name] = value
+	s.Fields[name] = float64(value)
 	return s
 }
 
