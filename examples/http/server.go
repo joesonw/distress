@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
+	println("started")
 	rand.Seed(time.Now().UnixNano())
 	log.Fatal(http.ListenAndServe(":8080", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		delay, _ := time.ParseDuration(r.URL.Query().Get("delay"))

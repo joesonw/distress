@@ -148,3 +148,9 @@ func (vm *VM) Reset() {
 	vm.asyncPool.Stop()
 	vm.asyncPool.Start()
 }
+
+func (vm *VM) Stop() {
+	vm.state.Close()
+	vm.releasePool.Clean()
+	vm.asyncPool.Stop()
+}

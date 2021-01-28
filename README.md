@@ -25,9 +25,6 @@ let's take following as an exmaple
 
 ```lua
 local http = require "http"
-local metrics = require "metrics"
-
-local counter = metrics:counter("request", { --[[ tags --]] })
 
 function run(id)
     local err, body, headers, status = http:get("http://localhost:10080")()
