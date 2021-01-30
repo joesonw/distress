@@ -106,7 +106,7 @@ func lDo(L *lua.LState) int {
 		luautil.ReportContextStat(c.luaCtx, stat.New("http").
 			Tag("url", url).
 			Tag("status", strconv.Itoa(res.StatusCode)).
-			Int64Field("cost_ns", time.Since(start).Nanoseconds()))
+			Int64Field("duratio_ns", time.Since(start).Nanoseconds()))
 		return returnResult, nil
 	})
 }

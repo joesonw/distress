@@ -109,7 +109,7 @@ func serviceClientCall(L *lua.LState) int {
 			s := stat.New("grpc")
 			s.Tag("service", serviceName)
 			s.Tag("method", methodName)
-			s.Int64Field("cost_ns", time.Since(start).Nanoseconds())
+			s.Int64Field("duration_ns", time.Since(start).Nanoseconds())
 			luautil.ReportContextStat(c.luaCtx, s)
 
 			res, err := dynamic.AsDynamicMessage(resMessage)

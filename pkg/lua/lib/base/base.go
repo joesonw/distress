@@ -83,7 +83,7 @@ func lGroup(L *lua.LState) int {
 		for k, v := range ctx.luaCtx.Tags() {
 			s.Tag(k, v)
 		}
-		s.Int64Field("cost_ns", cost.Nanoseconds())
+		s.Int64Field("duration_ns", cost.Nanoseconds())
 		ctx.luaCtx.Global().Report(s)
 	}
 	if err != nil {

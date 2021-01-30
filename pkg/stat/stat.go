@@ -1,7 +1,6 @@
 package stat
 
 import (
-	"strconv"
 	"time"
 )
 
@@ -27,7 +26,7 @@ func (s *Stat) SetTime(t time.Time) *Stat {
 }
 
 func (s *Stat) Tag(name, value string) *Stat {
-	s.Tags[name] = strconv.Quote(value)
+	s.Tags[name] = value
 	return s
 }
 
