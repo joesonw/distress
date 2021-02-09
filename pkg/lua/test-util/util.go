@@ -15,7 +15,6 @@ import (
 	libbytes "github.com/joesonw/lte/pkg/lua/lib/bytes"
 	libjson "github.com/joesonw/lte/pkg/lua/lib/json"
 	libpool "github.com/joesonw/lte/pkg/lua/lib/pool"
-	libstat "github.com/joesonw/lte/pkg/lua/lib/stat"
 	libtime "github.com/joesonw/lte/pkg/lua/lib/time"
 	"github.com/joesonw/lte/pkg/stat"
 )
@@ -88,7 +87,6 @@ func Run(t *testing.T, tests ...Testable) {
 			libbase.Open(L, luaCtx, afero.NewMemMapFs())
 			libjson.Open(L, luaCtx)
 			libbytes.Open(L, luaCtx)
-			libstat.Open(L, luaCtx)
 
 			libtime.Open(L, luaCtx)
 

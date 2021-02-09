@@ -23,7 +23,6 @@ import (
 	libnet "github.com/joesonw/lte/pkg/lua/lib/net"
 	libpool "github.com/joesonw/lte/pkg/lua/lib/pool"
 	libproto "github.com/joesonw/lte/pkg/lua/lib/proto"
-	libstat "github.com/joesonw/lte/pkg/lua/lib/stat"
 	libtime "github.com/joesonw/lte/pkg/lua/lib/time"
 	libuuid "github.com/joesonw/lte/pkg/lua/lib/uuid"
 	libwebsocket "github.com/joesonw/lte/pkg/lua/lib/websocket"
@@ -94,7 +93,6 @@ func New(logger *zap.Logger, asyncPool *libpool.AsyncPool, global *luacontext.Gl
 	libnet.Open(L, luaCtx)
 	libuuid.Open(L, luaCtx)
 	libcrypto.Open(L, luaCtx)
-	libstat.Open(L, luaCtx)
 	libbuffer.Open(L, luaCtx)
 
 	for k, v := range params.EnvVars {
