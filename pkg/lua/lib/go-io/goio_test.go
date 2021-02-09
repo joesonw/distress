@@ -35,6 +35,10 @@ func (c *readWriter) GetGuard() *libpool.Guard {
 	return c.guard
 }
 
+func (c *readWriter) GetName() string {
+	return ""
+}
+
 func (c *readWriter) Close() error {
 	c.closed.Done()
 	return nil

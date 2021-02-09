@@ -24,7 +24,7 @@ type file struct {
 	guard *libpool.Guard
 }
 
-func (f *file) Name() string {
+func (f *file) GetName() string {
 	return f.name
 }
 
@@ -36,8 +36,8 @@ func (f *file) GetGuard() *libpool.Guard {
 	return f.guard
 }
 
-type Named interface {
-	Name() string
+type GetName interface {
+	GetName() string
 }
 
 var fileFuncs = map[string]lua.LGFunction{
@@ -47,8 +47,8 @@ var fileFuncs = map[string]lua.LGFunction{
 	"close":    libgoio.Close,
 	"name": func(L *lua.LState) int {
 		ud := L.CheckUserData(1)
-		named := ud.Value.(Named)
-		L.Push(lua.LString(named.Name()))
+		named := ud.Value.(GetName)
+		L.Push(lua.LString(named.GetName()))
 		return 1
 	},
 }

@@ -2,6 +2,7 @@ package net
 
 import (
 	"context"
+	"fmt"
 	"net"
 
 	lua "github.com/yuin/gopher-lua"
@@ -45,9 +46,11 @@ func netOpen(L *lua.LState) int {
 			return nil, err
 		}
 
-		g := c.luaCtx.ReleasePool().Watch(libpool.NewIOReadWriteCloserResource(c.protocol+" conn", conn))
+		name := fmt.Sprintf("%s(%s)", c.protocol, addr)
+		g := c.luaCtx.ReleasePool().Watch(libpool.NewIOReadWriteCloserResource(name, conn))
 		return func(L *lua.LState) int {
 			L.Push(c.class.New(L, &connContext{
+				name:   name,
 				Conn:   conn,
 				guard:  g,
 				luaCtx: c.luaCtx,

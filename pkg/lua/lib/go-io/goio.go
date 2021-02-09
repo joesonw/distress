@@ -11,11 +11,14 @@ import (
 	libasync "github.com/joesonw/lte/pkg/lua/lib/async"
 	libbytes "github.com/joesonw/lte/pkg/lua/lib/bytes"
 	libpool "github.com/joesonw/lte/pkg/lua/lib/pool"
+	luautil "github.com/joesonw/lte/pkg/lua/util"
+	"github.com/joesonw/lte/pkg/stat"
 )
 
 type IO interface {
 	GetContext() *luacontext.Context
 	GetGuard() *libpool.Guard
+	GetName() string
 }
 
 type Reader interface {
@@ -46,6 +49,7 @@ func Read(L *lua.LState) int {
 		if err != nil {
 			return nil, err
 		}
+		luautil.ReportContextStat(reader.GetContext(), stat.New(reader.GetName()).IntField("read_size", len(b)))
 		return func(L *lua.LState) int {
 			L.Push(libbytes.New(L, b))
 			return 1
@@ -64,6 +68,7 @@ func ReadAll(L *lua.LState) int {
 		if err != nil {
 			return nil, err
 		}
+		luautil.ReportContextStat(reader.GetContext(), stat.New(reader.GetName()).IntField("read_size", len(b)))
 		return func(L *lua.LState) int {
 			L.Push(libbytes.New(L, b))
 			return 1
@@ -80,6 +85,9 @@ func Write(L *lua.LState) int {
 	bytes := libbytes.Check(L, 2)
 	return libasync.Deferred(L, writer.GetContext().AsyncPool(), func(ctx context.Context) error {
 		_, err := writer.Write(bytes)
+		if err == nil {
+			luautil.ReportContextStat(writer.GetContext(), stat.New(writer.GetName()).IntField("write_size", len(bytes)))
+		}
 		return err
 	})
 }

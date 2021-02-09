@@ -20,8 +20,13 @@ var (
 
 type connContext struct {
 	net.Conn
+	name   string
 	guard  *libpool.Guard
 	luaCtx *luacontext.Context
+}
+
+func (f *connContext) GetName() string {
+	return f.name
 }
 
 func (f *connContext) GetContext() *luacontext.Context {

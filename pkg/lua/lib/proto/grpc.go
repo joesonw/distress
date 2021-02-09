@@ -10,6 +10,7 @@ import (
 	"github.com/jhump/protoreflect/dynamic/grpcdynamic"
 	lua "github.com/yuin/gopher-lua"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/status"
 
 	luacontext "github.com/joesonw/lte/pkg/lua/context"
 	libasync "github.com/joesonw/lte/pkg/lua/lib/async"
@@ -96,6 +97,9 @@ func serviceClientCall(L *lua.LState) int {
 				return nil, err
 			}
 
+			s := stat.New("grpc").Tag("service", serviceName).Tag("method", methodName)
+			defer luautil.ReportContextStat(c.luaCtx, s)
+
 			req := dynamic.NewMessage(method.GetInputType())
 			if err := req.UnmarshalJSON(bytes); err != nil {
 				L.RaiseError(err.Error())
@@ -104,23 +108,26 @@ func serviceClientCall(L *lua.LState) int {
 			start := time.Now()
 			resMessage, err := c.client.InvokeRpc(ctx, method, req)
 			if err != nil {
+				code := status.Code(err)
+				s.Tag("code", code.String()).Int64Field("success", 0)
 				return nil, err
 			}
-			s := stat.New("grpc")
-			s.Tag("service", serviceName)
-			s.Tag("method", methodName)
-			s.Int64Field("duration_ns", time.Since(start).Nanoseconds())
-			luautil.ReportContextStat(c.luaCtx, s)
 
+			s.Int64Field("duration_ns", time.Since(start).Nanoseconds())
 			res, err := dynamic.AsDynamicMessage(resMessage)
 			if err != nil {
+				s.Int64Field("success", 0)
 				return nil, err
 			}
 
 			bytes, err = res.MarshalJSON()
 			if err != nil {
+				s.Int64Field("success", 0)
 				return nil, err
 			}
+			s.IntField("response_size", len(bytes))
+
+			s.Int64Field("success", 1).IntField("response_size", len(bytes))
 
 			return func(L *lua.LState) int {
 				val, err := libjson.Unmarshal(L, bytes)

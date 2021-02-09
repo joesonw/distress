@@ -20,6 +20,24 @@ func New(name string) *Stat {
 	}
 }
 
+func (s *Stat) Clone() *Stat {
+	tags := map[string]string{}
+	fields := map[string]float64{}
+	for k, v := range s.Tags {
+		tags[k] = v
+	}
+	for k, v := range s.Fields {
+		fields[k] = v
+	}
+
+	return &Stat{
+		Name:      s.Name,
+		Timestamp: s.Timestamp,
+		Tags:      tags,
+		Fields:    fields,
+	}
+}
+
 func (s *Stat) SetTime(t time.Time) *Stat {
 	s.Timestamp = t
 	return s

@@ -43,6 +43,7 @@ func wsOpen(L *lua.LState) int {
 		g := c.luaCtx.ReleasePool().Watch(libpool.NewIOReadWriteCloserResource("websocket conn", conn))
 		return func(L *lua.LState) int {
 			L.Push(c.class.New(L, &connContext{
+				addr:   url,
 				conn:   conn,
 				br:     br,
 				guard:  g,

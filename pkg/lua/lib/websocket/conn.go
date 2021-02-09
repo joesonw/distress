@@ -13,11 +13,14 @@ import (
 	libasync "github.com/joesonw/lte/pkg/lua/lib/async"
 	libbytes "github.com/joesonw/lte/pkg/lua/lib/bytes"
 	libpool "github.com/joesonw/lte/pkg/lua/lib/pool"
+	luautil "github.com/joesonw/lte/pkg/lua/util"
+	"github.com/joesonw/lte/pkg/stat"
 )
 
 const connMetaName = "*WEBSOCKET*CONN*"
 
 type connContext struct {
+	addr     string
 	messages []wsutil.Message
 	conn     net.Conn
 	br       *bufio.Reader
@@ -41,6 +44,7 @@ func connRead(L *lua.LState) int {
 			if err != nil {
 				return nil, err
 			}
+
 			for i := range messages {
 				if messages[i].OpCode.IsData() {
 					c.messages = append(c.messages, messages[i])
@@ -51,6 +55,7 @@ func connRead(L *lua.LState) int {
 		if len(c.messages) > 0 {
 			m := c.messages[len(c.messages)-1]
 			c.messages = c.messages[:len(c.messages)-1]
+			luautil.ReportContextStat(c.luaCtx, stat.New(c.addr).IntField("read_size", len(m.Payload)))
 			return func(L *lua.LState) int {
 				L.Push(libbytes.New(L, m.Payload))
 				return 1
@@ -61,6 +66,7 @@ func connRead(L *lua.LState) int {
 		if err != nil {
 			return nil, err
 		}
+		luautil.ReportContextStat(c.luaCtx, stat.New(c.addr).IntField("read_size", len(b)))
 		return func(L *lua.LState) int {
 			L.Push(libbytes.New(L, b))
 			return 1
@@ -71,6 +77,7 @@ func connRead(L *lua.LState) int {
 func connWrite(L *lua.LState) int {
 	c := L.CheckUserData(1).Value.(*connContext)
 	bytes := libbytes.Check(L, 2)
+	luautil.ReportContextStat(c.luaCtx, stat.New(c.addr).IntField("write_size", len(bytes)))
 	return libasync.Deferred(L, c.luaCtx.AsyncPool(), func(ctx context.Context) error {
 		return wsutil.WriteClientText(c.conn, bytes)
 	})

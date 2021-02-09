@@ -18,7 +18,7 @@ type scope struct {
 
 type Context struct {
 	global      *Global
-	mu          *sync.Mutex
+	mu          sync.Mutex
 	logger      *zap.Logger
 	releasePool *libpool.ReleasePool
 	asyncPool   *libpool.AsyncPool
@@ -27,10 +27,10 @@ type Context struct {
 
 func New(L *lua.LState, global *Global, releasePool *libpool.ReleasePool, asyncPool *libpool.AsyncPool, logger *zap.Logger) *Context {
 	c := &Context{
-		mu: &sync.Mutex{}, releasePool: releasePool,
-		asyncPool: asyncPool,
-		logger:    logger,
-		global:    global,
+		releasePool: releasePool,
+		asyncPool:   asyncPool,
+		logger:      logger,
+		global:      global,
 	}
 
 	ud := L.NewUserData()

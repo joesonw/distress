@@ -6,7 +6,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -80,8 +79,11 @@ func lDo(L *lua.LState) int {
 		}
 
 		start := time.Now()
+		s := stat.New("http").Tag("url", url)
+		defer luautil.ReportContextStat(c.luaCtx, s)
 		res, err := c.client.Do(req)
 		if err != nil {
+			s.IntField("success", 0)
 			return nil, err
 		}
 		defer res.Body.Close()
@@ -100,13 +102,11 @@ func lDo(L *lua.LState) int {
 
 		b, err = ioutil.ReadAll(res.Body)
 		if err != nil {
+			s.IntField("success", 0)
 			return returnResult, err
 		}
+		s.IntField("success", 1).Int64Field("duration_ns", time.Since(start).Nanoseconds())
 
-		luautil.ReportContextStat(c.luaCtx, stat.New("http").
-			Tag("url", url).
-			Tag("status", strconv.Itoa(res.StatusCode)).
-			Int64Field("duratio_ns", time.Since(start).Nanoseconds()))
 		return returnResult, nil
 	})
 }
