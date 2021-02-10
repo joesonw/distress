@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -87,6 +88,7 @@ func lDo(L *lua.LState) int {
 			return nil, err
 		}
 		defer res.Body.Close()
+		s.Tag("status", strconv.Itoa(res.StatusCode))
 
 		var b []byte
 		returnResult := func(L *lua.LState) int {

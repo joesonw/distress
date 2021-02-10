@@ -55,7 +55,7 @@ func connRead(L *lua.LState) int {
 		if len(c.messages) > 0 {
 			m := c.messages[len(c.messages)-1]
 			c.messages = c.messages[:len(c.messages)-1]
-			luautil.ReportContextStat(c.luaCtx, stat.New(c.addr).IntField("read_size", len(m.Payload)))
+			luautil.ReportContextStat(c.luaCtx, stat.New("websocket").Tag("addr", c.addr).IntField("read", len(m.Payload)))
 			return func(L *lua.LState) int {
 				L.Push(libbytes.New(L, m.Payload))
 				return 1
@@ -66,7 +66,7 @@ func connRead(L *lua.LState) int {
 		if err != nil {
 			return nil, err
 		}
-		luautil.ReportContextStat(c.luaCtx, stat.New(c.addr).IntField("read_size", len(b)))
+		luautil.ReportContextStat(c.luaCtx, stat.New("websocket").Tag("addr", c.addr).IntField("read", len(b)))
 		return func(L *lua.LState) int {
 			L.Push(libbytes.New(L, b))
 			return 1
@@ -77,7 +77,7 @@ func connRead(L *lua.LState) int {
 func connWrite(L *lua.LState) int {
 	c := L.CheckUserData(1).Value.(*connContext)
 	bytes := libbytes.Check(L, 2)
-	luautil.ReportContextStat(c.luaCtx, stat.New(c.addr).IntField("write_size", len(bytes)))
+	luautil.ReportContextStat(c.luaCtx, stat.New("websocket").Tag("addr", c.addr).IntField("write", len(bytes)))
 	return libasync.Deferred(L, c.luaCtx.AsyncPool(), func(ctx context.Context) error {
 		return wsutil.WriteClientText(c.conn, bytes)
 	})

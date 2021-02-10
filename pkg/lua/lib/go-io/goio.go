@@ -49,7 +49,7 @@ func Read(L *lua.LState) int {
 		if err != nil {
 			return nil, err
 		}
-		luautil.ReportContextStat(reader.GetContext(), stat.New(reader.GetName()).IntField("read_size", len(b)))
+		luautil.ReportContextStat(reader.GetContext(), stat.New("io").Tag("name", reader.GetName()).IntField("read", len(b)))
 		return func(L *lua.LState) int {
 			L.Push(libbytes.New(L, b))
 			return 1
@@ -68,7 +68,7 @@ func ReadAll(L *lua.LState) int {
 		if err != nil {
 			return nil, err
 		}
-		luautil.ReportContextStat(reader.GetContext(), stat.New(reader.GetName()).IntField("read_size", len(b)))
+		luautil.ReportContextStat(reader.GetContext(), stat.New("io").Tag("name", reader.GetName()).IntField("read", len(b)))
 		return func(L *lua.LState) int {
 			L.Push(libbytes.New(L, b))
 			return 1
@@ -86,7 +86,7 @@ func Write(L *lua.LState) int {
 	return libasync.Deferred(L, writer.GetContext().AsyncPool(), func(ctx context.Context) error {
 		_, err := writer.Write(bytes)
 		if err == nil {
-			luautil.ReportContextStat(writer.GetContext(), stat.New(writer.GetName()).IntField("write_size", len(bytes)))
+			luautil.ReportContextStat(writer.GetContext(), stat.New("io").Tag("name", writer.GetName()).IntField("write", len(bytes)))
 		}
 		return err
 	})

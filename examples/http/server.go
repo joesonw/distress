@@ -11,6 +11,11 @@ func main() {
 	println("started")
 	rand.Seed(time.Now().UnixNano())
 	log.Fatal(http.ListenAndServe(":8080", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if rand.Float64() > 0.98 {
+			http.Error(w, "mock failure", http.StatusInternalServerError)
+			return
+		}
+
 		delay, _ := time.ParseDuration(r.URL.Query().Get("delay"))
 		if delay == 0 {
 			delay = time.Duration(rand.Float64() * 3 * float64(time.Millisecond))
